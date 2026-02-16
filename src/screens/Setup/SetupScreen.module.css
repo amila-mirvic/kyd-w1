@@ -1,0 +1,329 @@
+.screen {
+  width: 100%;
+  height: 100vh;
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  position: relative;
+  overflow: hidden;
+}
+
+.overlay {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+}
+
+/* ------------------------------------------------ */
+/* HERO CARD */
+.heroCard {
+  position: absolute;
+  left: 140px;
+  top: 100px;
+  width: 840px;
+
+  border-radius: 32px;
+  background: rgba(202, 88, 64, 0.8);
+  box-shadow: 0 18px 50px rgba(202, 88, 64, 0.35);
+
+  padding: 54px;
+  padding-bottom: 130px; /* prostor za PLAY button */
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 18px;
+
+  overflow: visible;
+
+  animation: cardIn 550ms ease-out both;
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ✅ SKIP link (kao na slici) */
+.skipLink {
+  position: absolute;
+  right: 80px;
+  bottom: 120px;
+
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+
+  font-family: "Tomorrow", sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+
+  cursor: pointer;
+  opacity: 0.9;
+}
+
+.skipLink:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* ------------------------------------------------ */
+/* TEXT */
+.description {
+  margin: 0;
+  color: #fff;
+  font-size: 18px;
+  line-height: 1.45;
+  opacity: 0.95;
+  max-width: 720px;
+  font-weight: 400;
+
+  white-space: pre-line;
+
+  min-height: 120px; /* ⬅️ ključ: nema “praznog” skoka */
+}
+
+/* ------------------------------------------------ */
+/* FORM */
+.formBlock {
+  width: 100%;
+  margin-top: 6px;
+}
+
+.label {
+  display: block;
+  margin-bottom: 12px;
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-size: 16px;
+}
+
+.input {
+  width: 100%;
+  height: 62px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  padding: 0 18px;
+  font-size: 18px;
+  font-family: "Tomorrow", sans-serif;
+  color: #ca5840;
+}
+
+/* ------------------------------------------------ */
+/* PLAY BUTTON (WELCOME STYLE) */
+.playBtn {
+  position: absolute;
+  left: 50%;
+  bottom: -48px;
+
+  transform: translateX(-50%) scale(1);
+
+  width: 560px;
+  height: 96px;
+
+  border-radius: 18px;
+  border: none;
+  background: #ffffff;
+
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #ca5840;
+
+  cursor: pointer;
+
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.3);
+
+  transition:
+    transform 520ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.playBtn:hover {
+  transform: translateX(-50%) scale(1.1);
+  box-shadow: 0 22px 40px rgba(0, 0, 0, 0.35);
+}
+
+.playBtn:active {
+  transform: translateX(-50%) scale(0.98);
+}
+
+.playBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: translateX(-50%) scale(1);
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.2);
+}
+
+.playBtn:disabled:hover {
+  transform: translateX(-50%) scale(1);
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.2);
+}
+
+/* ------------------------------------------------ */
+/* CHARACTERS AREA */
+.charactersArea {
+  position: absolute;
+  right: 100px;
+  top: 50px;
+
+  width: 760px;
+  height: 860px;
+
+  pointer-events: none;
+}
+
+.characterBtn {
+  position: absolute;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  pointer-events: auto;
+  opacity: 0.8;
+}
+
+/* BASE POSITIONS */
+.femaleBtn {
+  left: 100px;
+  top: 0;
+}
+
+.maleBtn {
+  left: 450px;
+  top: 0;
+}
+
+.imgCrop {
+  overflow: visible;
+}
+
+.characterImg {
+  height: 860px;
+  width: auto;
+  display: block;
+}
+
+.femaleImg {
+  transform: translateX(60px);
+}
+
+.maleImg {
+  transform: translateX(-60px);
+}
+
+/* SELECT STATES */
+.isUnselected {
+  opacity: 0.8;
+}
+
+.isSelected {
+  opacity: 1;
+  z-index: 3;
+}
+
+.cropSelected {
+  overflow: hidden;
+  height: 1000px;
+}
+
+.femaleBtn.isSelected,
+.maleBtn.isSelected {
+  top: auto;
+  bottom: -150px;
+}
+
+.maleBtn.isSelected {
+  left: 300px;
+}
+
+.femaleBtn.isSelected {
+  left: 20px;
+}
+
+.imgSelected {
+  height: 1600px;
+  transform: translateX(0);
+}
+
+/* ------------------------------------------------ */
+/* HITBOXES */
+.hitboxLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 999;
+  pointer-events: none;
+}
+
+.hitbox {
+  position: absolute;
+  background: transparent;
+  border: none;
+  pointer-events: auto;
+}
+
+.femaleHitbox {
+  left: 70px;
+  top: 0;
+  width: 330px;
+  height: 860px;
+}
+
+.maleHitbox {
+  left: 380px;
+  top: 0;
+  width: 330px;
+  height: 860px;
+}
+
+/* ------------------------------------------------ */
+/* CARET */
+.caret {
+  display: inline-block;
+  width: 10px;
+  height: 18px;
+  margin-left: 6px;
+  vertical-align: -2px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.75);
+  animation: caretBlink 700ms steps(1) infinite;
+}
+
+@keyframes caretBlink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.caretDone {
+  opacity: 0 !important;
+  animation: none !important;
+}
+
+/* ------------------------------------------------ */
+/* FLOAT */
+.float {
+  animation: floatY 4.5s ease-in-out infinite;
+}
+
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}

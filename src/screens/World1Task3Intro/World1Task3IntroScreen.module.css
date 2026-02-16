@@ -1,0 +1,114 @@
+.screen {
+  width: 100%;
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.08);
+}
+
+.judge {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  transform: translate(-52%, -60%);
+  width: min(860px, 92vw);
+  height: auto;
+  pointer-events: none;
+}
+
+.captionWrap {
+  position: absolute;
+  left: 50%;
+  bottom: 70px;
+  transform: translateX(-50%);
+  width: min(980px, 92vw); /* ✅ širina teksta kao figma */
+}
+
+.caption {
+  width: 100%;
+  background: rgba(0,0,0,0.55);
+  border-radius: 10px;
+  padding: 16px 18px;
+
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  text-align: center;
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.caret {
+  display: inline-block;
+  margin-left: 2px;
+  opacity: 0.9;
+  animation: blink 0.8s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 0; }
+  51%, 100% { opacity: 1; }
+}
+
+.instructionsCard {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  transform: translate(-50%, -50%);
+  width: min(720px, 92vw);
+
+  background: rgba(255,255,255,0.92);
+  border-radius: 16px;
+  padding: 20px 22px;
+
+  box-shadow: 0 18px 46px rgba(0,0,0,0.25);
+}
+
+.instructionsTitle {
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 900;
+  color: #ca5840;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+}
+
+.instructionsList {
+  display: grid;
+  gap: 10px;
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 800;
+  color: #ca5840;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dotGreen, .dotYellow, .dotRed {
+  width: 18px;
+  height: 10px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.dotGreen { background: #1bb35f; }
+.dotYellow { background: #f1c232; }
+.dotRed { background: #d94a4a; }
+
+.autoNote {
+  margin-top: 14px;
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 800;
+  color: rgba(0,0,0,0.55);
+  text-align: right;
+}

@@ -1,0 +1,305 @@
+.screen {
+  width: 100%;
+  height: 100vh;
+
+  background-image: var(--bg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  position: relative;
+  overflow: hidden;
+}
+
+.overlay {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+}
+
+/* LEFT TASK RAIL */
+.taskRail {
+  position: absolute;
+  left: 55px;
+  top: 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+}
+
+.taskItem {
+  position: relative;
+  width: 550px; /* ⬅️ šire jer sve raste */
+  display: grid;
+  grid-template-columns: 190px 1fr; /* ⬅️ veći icon */
+  align-items: center;
+  column-gap: 50px;
+}
+
+/* ✅ ICON WRAP — VEĆI + BLAGI BACKGROUND */
+.taskIconWrap {
+  width: 190px;
+  height: 190px;
+  border-radius: 999px;
+
+  padding: 0;
+  border: none;
+
+  display: grid;
+  place-items: center;
+
+  cursor: pointer;
+  transition: background 260ms ease, transform 260ms ease;
+}
+
+.taskIconWrap:hover {
+  background: rgba(255, 255, 255, 0.32);
+  transform: scale(1.02);
+}
+
+/* icon image */
+.taskIcon {
+  width: 200px;
+  height: 200px;
+  border-radius: 999px;
+  object-fit: cover;
+  display: block;
+}
+
+.taskIconDisabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* BUTTONS — VEĆI */
+.taskBtn {
+  height: 88px;
+  border-radius: 16px;
+  border: none;
+
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 0.08em;
+
+  padding: 0 32px;
+  text-transform: uppercase;
+
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.2);
+}
+
+.taskBtnEnabled {
+  background: rgba(255, 255, 255, 0.94);
+  color: #ca5840;
+  cursor: pointer;
+
+  transition: transform 260ms ease, box-shadow 260ms ease, background 260ms ease;
+}
+
+.taskBtnEnabled:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 42px rgba(0, 0, 0, 0.26);
+}
+
+.taskBtnEnabled:active {
+  transform: translateY(1px);
+}
+
+.taskBtnDisabled {
+  background: rgba(255, 255, 255, 0.75);
+  color: rgba(202, 88, 64, 0.55);
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* ✅ PULSE FOR START TASK 1 */
+@keyframes pulseBtn {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    transform: scale(1.07);
+    box-shadow: 0 28px 54px rgba(0, 0, 0, 0.34);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.taskBtnPulse {
+  animation: pulseBtn 1.35s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.taskBtnPulse:hover {
+  animation-play-state: paused;
+}
+
+/* CHARACTER */
+.characterWrap {
+  position: absolute;
+  left: 750px;
+  top: -40px;
+
+  width: 620px;
+  height: 980px;
+
+  pointer-events: none;
+}
+
+.characterImg {
+  width: auto;
+  height: 980px;
+  display: block;
+}
+
+/* SPEECH BUBBLE */
+.bubble {
+  position: absolute;
+  right: 70px;
+  top: 52px;
+
+  width: 760px;
+  height: 130px;
+
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 18px;
+
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.18);
+
+  display: flex;
+  align-items: center;
+  padding: 0 26px;
+}
+
+.bubbleText {
+  font-family: "Tomorrow", sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #ca5840;
+}
+
+
+
+/* ACHIEVEMENTS ICON BUTTON (top right) — FIGMA STYLE */
+.achBtn {
+  position: absolute;
+  top: 34px;
+  right: 42px;
+
+  width: 60px;
+  height: 60px;
+
+  border: none;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.95);
+
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.22);
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: transform 180ms ease, box-shadow 180ms ease;
+  z-index: 60; /* above everything */
+}
+
+.achBtn:hover {
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 20px 34px rgba(0, 0, 0, 0.26);
+}
+
+.achBtn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.achIcon {
+  width: 32px;
+  height: 32px;
+  display: block;
+  object-fit: contain;
+}
+
+/* ✅ ACHIEVEMENTS PANEL (big white box below icon) */
+.achPanel {
+  position: absolute;
+  top: 110px;   /* button top (34) + 60 + gap */
+  right: 42px;
+
+  width: 560px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.95);
+
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.25);
+
+  padding: 25px; /* ✅ as requested */
+  z-index: 59;
+
+  animation: achIn 220ms ease both;
+}
+
+@keyframes achIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.achRow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.achLabel {
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: #1d1d1d;
+}
+
+.achValue {
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  color: #1d1d1d;
+}
+
+.achSubTitle {
+  margin-top: 12px;
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: #1d1d1d;
+}
+
+.badgeRow {
+  margin-top: 14px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.badgeImg {
+  width: 74px;
+  height: 50px;
+  object-fit: contain;
+}
+
+.badgeEmpty {
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: #1d1d1d;
+}
