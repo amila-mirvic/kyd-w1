@@ -1,210 +1,191 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import styles from "./World1Task3Screen.module.css";
 
-/**
- * TASK 3:
- * - Phase A: YES / NOT SURE / NO (ikonice correct / not sure / wrong)
- * - Nakon tačnog odgovora: prikaži "CORRECT" overlay + animaciju poena (copy Task1 feel)
- * - "SHOW ME HOW TO ACT" popup samo ako je Phase A tačan
- * - Phase B: Choose the right path (A/B/C/D) -> opet correct overlay + points anim
- * - End popup identičan Task1 (sa task3 points + badges)
- */
+// ✅ Re-use Task1 CSS da bude 1:1 (header, animacije, reward box, fly animacije…)
+import styles from "../World1Task1/World1Task1Screen.module.css";
+
+// ⬇️ prilagodi ove rute ako su ti drugačije u projektu
+const MAIN_MENU_ROUTE = "/world1";
+const TASK_SELECTOR_ROUTE = "/world1/tasks";
+const TASK3_ROUTE = "/world1/task3";
+
+const asset = (p) => `${process.env.PUBLIC_URL}${p}`;
+
+// ✅ Task3 assets (public/world1/task3)
+const BG = asset("/world1/task3/bg.png");
+const ICON_POINTS = asset("/world1/task3/points.png");
+const ICON_CURIOSITY_POINTS = asset("/world1/task3/curiositypoints.png");
+
+const BTN_CORRECT = asset("/world1/task3/correct.png"); // YES
+const BTN_MIDDLE = asset("/world1/task3/middle.png");   // NOT SURE
+const BTN_WRONG = asset("/world1/task3/wrong.png");     // NO
+
+const BADGE_BEGINNER = asset("/world1/task3/beginner.png");
+const BADGE_ADVANCED = asset("/world1/task3/advanced.png");
+const BADGE_EXPERT = asset("/world1/task3/expert.png");
+const BADGE_CURIOSITY = asset("/world1/task3/curiosity.png");
+
+// ✅ zamijeni tekstove/tačne odgovore po potrebi (ovo je primjer strukture)
+const STATEMENTS = [
+  {
+    id: 1,
+    text: "A journalist publishes an investigation about misuse of public money. The government labels it “harmful” and shuts the outlet down.",
+    correct: "wrong", // ✅ (example) choose correct/middle/wrong
+    wrongFeedback: "Not quite. Shutting down media is a serious rights issue.",
+  },
+  {
+    id: 2,
+    text: "The government passes a law allowing it to ban protests for “public order” without clear limits or oversight.",
+    correct: "wrong",
+    wrongFeedback: "Not quite. Broad bans without oversight can be abusive.",
+  },
+  {
+    id: 3,
+    text: "A new rule requires all NGOs receiving foreign donations to register and publish donors, with vague penalties.",
+    correct: "middle",
+    wrongFeedback: "Not quite. Transparency can be okay, but vague penalties are risky.",
+  },
+  {
+    id: 4,
+    text: "An election commission changes polling station locations with 24h notice, disproportionately affecting one region.",
+    correct: "wrong",
+    wrongFeedback: "Not quite. Late changes can undermine fair access.",
+  },
+];
 
 export default function World1Task3Screen() {
-  const location = useLocation();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const player = useMemo(() => {
-    const fromState = location.state && location.state.name ? location.state : null;
-    if (fromState) return fromState;
+  // player name comes from state (setup screen) – fallback
+  const player = location.state || {};
+  const nameUpper = (player?.name || player?.playerName || "PLAYER").toString().toUpperCase();
 
-    try {
-      const raw = localStorage.getItem("yd_player");
-      return raw ? JSON.parse(raw) : { name: "Player", character: "female" };
-    } catch {
-      return { name: "Player", character: "female" };
-    }
-  }, [location.state]);
-
-  const nameUpper = (player?.name || "PLAYER").toUpperCase();
-
-  // ✅ assets (Task3)
-  const bgA = `${process.env.PUBLIC_URL}/world1/task3/bg.png`;
-  const bgB = `${process.env.PUBLIC_URL}/world1/task3/bg_2.png`;
-
-  const iconPoints = `${process.env.PUBLIC_URL}/world1/task3/icon_points.png`;
-  const iconCuriosity = `${process.env.PUBLIC_URL}/world1/task3/icon_curiosity_points.png`;
-
-  const btnCorrect = `${process.env.PUBLIC_URL}/world1/task3/btn_correct.png`;
-  const btnNotSure = `${process.env.PUBLIC_URL}/world1/task3/btn_maybe.png`;
-  const btnWrong = `${process.env.PUBLIC_URL}/world1/task3/btn_wrong.png`;
-
-  // ✅ scoring (local state, plus persist at the end)
-  const [points, setPoints] = useState(0);
-  const [curiosityPoints, setCuriosityPoints] = useState(0);
-  const [badges, setBadges] = useState([]);
-
-  // ✅ animations (copy Task1 feel)
-  const [pointsFly, setPointsFly] = useState(null); // { id, value, x, y }
-  const [correctFlash, setCorrectFlash] = useState(false);
-
-  // ✅ flow
-  const [caseIdx, setCaseIdx] = useState(0);
-  const [phase, setPhase] = useState("A"); // A yes/no/maybe, then ACT popup, then B paths
-  const [actOpen, setActOpen] = useState(false);
-
-  const [endOpen, setEndOpen] = useState(false);
-
-  // ✅ Task 3 content (edit text later if treba — ali struktura je gotova)
-  const CASES = useMemo(
-    () => [
-      {
-        id: "t3c1",
-        a_text:
-          "A journalist publishes an investigation about misuse of public money. The government labels it “harmful” and shuts the outlet down.",
-        a_correct: "NO",
-        act_title: "SHOW ME HOW TO ACT",
-        act_body:
-          "Support legal challenge + public pressure + solidarity with journalists. Restrictions must be lawful, necessary, and proportionate.",
-        b_title: "CHOOSE THE RIGHT PATH",
-        b_options: [
-          { key: "A", label: "CAST LEGAL DOUBTS" },
-          { key: "B", label: "POST ANGRY MEMES AND WAIT" },
-          { key: "C", label: "SUPPORT LEGAL CHALLENGE + PUBLIC PRESSURE + SOLIDARITY WITH JOURNALISTS" },
-          { key: "D", label: "POST ANGRY MEMES AND WAIT" },
-        ],
-        b_correct: "C",
-      },
-      {
-        id: "t3c2",
-        a_text:
-          "The government passes a law allowing it to ban protests for “public order” without clear limits or oversight.",
-        a_correct: "NO",
-        act_title: "SHOW ME HOW TO ACT",
-        act_body:
-          "Demand clear limits, independent oversight, and proportionality. Challenge vague rules that can be abused.",
-        b_title: "CHOOSE THE RIGHT PATH",
-        b_options: [
-          { key: "A", label: "ASK NICELY ON SOCIAL MEDIA" },
-          { key: "B", label: "SUPPORT LEGAL CHALLENGE + MOBILIZE CIVIL SOCIETY" },
-          { key: "C", label: "WAIT FOR THE NEXT ELECTION" },
-          { key: "D", label: "DO NOTHING" },
-        ],
-        b_correct: "B",
-      },
-      {
-        id: "t3c3",
-        a_text:
-          "A mayor bans a peaceful assembly because it criticizes the local government, even though organizers follow the rules.",
-        a_correct: "NO",
-        act_title: "SHOW ME HOW TO ACT",
-        act_body:
-          "Protect freedom of assembly. Challenge the ban via courts/ombudsman and document violations. Build public support.",
-        b_title: "CHOOSE THE RIGHT PATH",
-        b_options: [
-          { key: "A", label: "CONTACT OMBUDSMAN + LEGAL AID + MEDIA" },
-          { key: "B", label: "POST ANGRY MEMES AND WAIT" },
-          { key: "C", label: "ASK THE MAYOR TO RECONSIDER (ONLY)" },
-          { key: "D", label: "DO NOTHING" },
-        ],
-        b_correct: "A",
-      },
-      {
-        id: "t3c4",
-        a_text:
-          "A new policy requires journalists to reveal sources to publish stories about public officials.",
-        a_correct: "NO",
-        act_title: "SHOW ME HOW TO ACT",
-        act_body:
-          "Source protection is essential. Support legal challenge and public pressure. Push for rights-respecting reforms.",
-        b_title: "CHOOSE THE RIGHT PATH",
-        b_options: [
-          { key: "A", label: "SUPPORT LEGAL CHALLENGE + PRESS FREEDOM GROUPS" },
-          { key: "B", label: "DO NOTHING" },
-          { key: "C", label: "POST ANGRY MEMES AND WAIT" },
-          { key: "D", label: "ASK JOURNALISTS TO COMPLY" },
-        ],
-        b_correct: "A",
-      },
-    ],
+  // background
+  const bgStyle = useMemo(
+    () => ({
+      backgroundImage: `url(${BG})`,
+    }),
     []
   );
 
-  const current = CASES[caseIdx];
-
-  // ✅ award helpers
-  const awardPoints = (value, origin = { x: 0, y: 0 }) => {
-    setPoints((p) => p + value);
-
-    const id = `${Date.now()}_${Math.random()}`;
-    setPointsFly({ id, value, x: origin.x, y: origin.y });
-
-    setTimeout(() => {
-      setPointsFly((f) => (f?.id === id ? null : f));
-    }, 900);
+  // top message same style as Task1
+  const TOP_MESSAGES = useMemo(
+    () => [
+      `${nameUpper} KEEP GOING`,
+      `${nameUpper} YOU’VE GOT THIS`,
+      `${nameUpper} STAY SHARP`,
+      `${nameUpper} THINK CRITICALLY`,
+    ],
+    [nameUpper]
+  );
+  const [topMessage, setTopMessage] = useState(TOP_MESSAGES[0]);
+  const pickNewTopMessage = () => {
+    setTopMessage((prev) => {
+      const pool = TOP_MESSAGES.filter((m) => m !== prev);
+      return pool[Math.floor(Math.random() * pool.length)] || prev;
+    });
   };
 
-  const awardCuriosity = (value) => {
-    setCuriosityPoints((c) => c + value);
+  // game state
+  const [index, setIndex] = useState(0);
+  const current = STATEMENTS[index];
+
+  const [points, setPoints] = useState(0);
+  const [curiosityPoints, setCuriosityPoints] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
+
+  // ✅ reward overlay like Task1
+  const [rewardOpen, setRewardOpen] = useState(false);
+  const [rewardLabel, setRewardLabel] = useState("CORRECT");
+  const rewardTimerRef = useRef(null);
+
+  const showReward = (label, ms = 520) => {
+    setRewardLabel(label);
+    setRewardOpen(true);
+    if (rewardTimerRef.current) clearTimeout(rewardTimerRef.current);
+    rewardTimerRef.current = setTimeout(() => setRewardOpen(false), ms);
   };
 
-  const flashCorrect = () => {
-    setCorrectFlash(true);
-    setTimeout(() => setCorrectFlash(false), 650);
+  useEffect(() => {
+    return () => {
+      if (rewardTimerRef.current) clearTimeout(rewardTimerRef.current);
+    };
+  }, []);
+
+  // ✅ fly-to-ui animation like Task1
+  const pointsTargetRef = useRef(null);
+  const curiosityTargetRef = useRef(null);
+  const statementCardRef = useRef(null);
+
+  const [flyItems, setFlyItems] = useState([]);
+  const flyIdRef = useRef(1);
+
+  const [pulsePoints, setPulsePoints] = useState(false);
+  const [pulseCuriosity, setPulseCuriosity] = useState(false);
+
+  const makeFly = ({ type, icon, delta }) => {
+    const fromRect = statementCardRef.current?.getBoundingClientRect();
+    const toRect =
+      type === "points"
+        ? pointsTargetRef.current?.getBoundingClientRect()
+        : curiosityTargetRef.current?.getBoundingClientRect();
+
+    if (!fromRect || !toRect) return;
+
+    const fromX = fromRect.left + fromRect.width * 0.62;
+    const fromY = fromRect.top + fromRect.height * 0.35;
+
+    const toX = toRect.left + toRect.width * 0.45;
+    const toY = toRect.top + toRect.height * 0.5;
+
+    const id = flyIdRef.current++;
+    setFlyItems((arr) => [...arr, { id, type, icon, delta, fromX, fromY, toX, toY }]);
+
+    window.setTimeout(() => {
+      setFlyItems((arr) => arr.filter((x) => x.id !== id));
+
+      if (type === "points") {
+        setPulsePoints(true);
+        window.setTimeout(() => setPulsePoints(false), 420);
+      } else {
+        setPulseCuriosity(true);
+        window.setTimeout(() => setPulseCuriosity(false), 420);
+      }
+    }, 820);
   };
 
-  // ✅ click handlers (Phase A)
-  const onAnswerA = (choice, e) => {
-    const isCorrect = choice === current.a_correct;
+  // popup for wrong feedback (Task1 style)
+  const [popupOpen, setPopupOpen] = useState(false);
+  const [popupText, setPopupText] = useState("");
 
-    if (isCorrect) {
-      // award points like task1 feel
-      const rect = e?.currentTarget?.getBoundingClientRect?.();
-      awardPoints(2, rect ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 } : { x: 0, y: 0 });
-      flashCorrect();
+  const openPopup = (text) => {
+    setPopupText(text);
+    setPopupOpen(true);
+  };
+  const closePopup = () => setPopupOpen(false);
 
-      // open ACT popup (only on correct)
-      setTimeout(() => setActOpen(true), 320);
-    } else {
-      // wrong -> show small shake (no bottom messages)
-      // (optional) you can add a subtle vibration class here
-    }
+  // locks
+  const answerLockRef = useRef(false);
+
+  // end popup like Task1
+  const [endOpen, setEndOpen] = useState(false);
+  const endLockRef = useRef(false);
+
+  const resolveSkillBadge = (correct) => {
+    if (correct <= 1) return { id: "beginner", src: BADGE_BEGINNER };
+    if (correct <= 3) return { id: "advanced", src: BADGE_ADVANCED };
+    return { id: "expert", src: BADGE_EXPERT };
   };
 
-  // ✅ ACT popup -> then go Phase B
-  const closeActAndGoB = () => {
-    // curiosity reward for "show me how to act"
-    awardCuriosity(1);
-    setActOpen(false);
-    setPhase("B");
+  const buildEarnedBadges = (correct, curiosity) => {
+    const earned = [];
+    earned.push(resolveSkillBadge(correct));
+    if (curiosity >= 5) earned.push({ id: "curiosity", src: BADGE_CURIOSITY });
+    return earned;
   };
 
-  // ✅ Phase B (paths)
-  const onPickPath = (key, e) => {
-    const isCorrect = key === current.b_correct;
-
-    if (isCorrect) {
-      const rect = e?.currentTarget?.getBoundingClientRect?.();
-      awardPoints(2, rect ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 } : { x: 0, y: 0 });
-      flashCorrect();
-
-      setTimeout(() => {
-        if (caseIdx < CASES.length - 1) {
-          setCaseIdx((i) => i + 1);
-          setPhase("A");
-        } else {
-          // end task
-          finalizeTask();
-        }
-      }, 420);
-    } else {
-      // optional: small shake
-    }
-  };
-
-  // ✅ end popup like Task1 (persist + aggregate)
-  const safeParse = (key) => {
+  const safeRead = (key) => {
     try {
       const raw = localStorage.getItem(key);
       return raw ? JSON.parse(raw) : null;
@@ -213,186 +194,257 @@ export default function World1Task3Screen() {
     }
   };
 
-  const safeSet = (key, obj) => {
+  const safeWrite = (key, value) => {
     try {
-      localStorage.setItem(key, JSON.stringify(obj));
+      localStorage.setItem(key, JSON.stringify(value));
     } catch {}
   };
 
-  const finalizeTask = () => {
-    // badge example (adjust to your actual badge assets)
-    const earnedBadges = [
-      { id: "t3_advanced", src: "world1/task3/badge_advanced.png" }, // if exists
-    ].filter(Boolean);
+  const saveResultsForAchievements = ({ taskPoints, taskCuriosity, badges }) => {
+    safeWrite("yd_world1_task3", {
+      points: taskPoints,
+      curiosityPoints: taskCuriosity,
+      badges: badges.map((b) => ({ id: b.id, src: b.src })),
+      correctCount,
+      totalQuestions: STATEMENTS.length,
+      finishedAt: Date.now(),
+    });
 
-    setBadges(earnedBadges);
+    const prev = safeRead("yd_scores") || { totalPoints: 0, totalCuriosityPoints: 0, badges: [] };
 
-    const result = {
-      points,
-      curiosityPoints,
-      badges: earnedBadges,
-      completedAt: new Date().toISOString(),
-    };
+    const markerKey = "yd_world1_task3_counted";
+    const alreadyCounted = safeRead(markerKey);
 
-    safeSet("yd_world1_task3", result);
-
-    // aggregate like Task1
-    const scores = safeParse("yd_scores") || { totalPoints: 0, totalCuriosityPoints: 0, badges: [] };
-
-    const alreadyCounted = localStorage.getItem("yd_world1_task3_counted") === "true";
     if (!alreadyCounted) {
-      scores.totalPoints = (scores.totalPoints || 0) + points;
-      scores.totalCuriosityPoints = (scores.totalCuriosityPoints || 0) + curiosityPoints;
-      scores.badges = Array.isArray(scores.badges) ? [...scores.badges, ...earnedBadges] : [...earnedBadges];
+      const mergedBadges = [
+        ...(Array.isArray(prev.badges) ? prev.badges : []),
+        ...badges.map((b) => ({ id: b.id, src: b.src })),
+      ];
 
-      safeSet("yd_scores", scores);
-      localStorage.setItem("yd_world1_task3_counted", "true");
+      safeWrite("yd_scores", {
+        totalPoints: (prev.totalPoints || 0) + taskPoints,
+        totalCuriosityPoints: (prev.totalCuriosityPoints || 0) + taskCuriosity,
+        badges: mergedBadges,
+      });
+
+      safeWrite(markerKey, true);
     }
+  };
+
+  const openEndPopup = () => {
+    if (endLockRef.current) return;
+    endLockRef.current = true;
+
+    const earned = buildEarnedBadges(correctCount, curiosityPoints);
+    saveResultsForAchievements({
+      taskPoints: points,
+      taskCuriosity: curiosityPoints,
+      badges: earned,
+    });
 
     setEndOpen(true);
   };
 
-  const goMainMenu = () => navigate("/world-1", { state: player });
-  const goTaskSelector = () => navigate("/world-1/tasks", { state: player });
+  const goMainMenu = () => navigate(MAIN_MENU_ROUTE, { state: player });
+  const goTaskSelector = () => navigate(TASK_SELECTOR_ROUTE, { state: player });
 
-  // ✅ UI
+  const goNext = () => {
+    setIndex((i) => {
+      const next = i + 1;
+      if (next >= STATEMENTS.length) {
+        window.setTimeout(() => openEndPopup(), 80);
+        return i;
+      }
+      return next;
+    });
+  };
+
+  const handleAnswer = (choice) => {
+    if (!current || answerLockRef.current || endOpen) return;
+    answerLockRef.current = true;
+
+    pickNewTopMessage();
+
+    if (choice === current.correct) {
+      showReward("CORRECT", 520);
+
+      setCorrectCount((c) => c + 1);
+
+      // +2 points (Task1 behavior)
+      makeFly({ type: "points", icon: ICON_POINTS, delta: "+2" });
+      window.setTimeout(() => setPoints((p) => p + 2), 520);
+
+      window.setTimeout(() => {
+        goNext();
+        answerLockRef.current = false;
+      }, 700);
+
+      return;
+    }
+
+    openPopup(current.wrongFeedback || "Not quite. Think again.");
+    window.setTimeout(() => {
+      answerLockRef.current = false;
+    }, 250);
+  };
+
+  // close popups on ESC
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape" && popupOpen) closePopup();
+      if (e.key === "Escape" && endOpen) goMainMenu();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [popupOpen, endOpen]);
+
+  const earnedBadges = useMemo(() => buildEarnedBadges(correctCount, curiosityPoints), [
+    correctCount,
+    curiosityPoints,
+  ]);
+
   return (
-    <div className={styles.screen} style={{ backgroundImage: `url(${phase === "A" ? bgA : bgB})` }}>
-      {/* TOP WHITE BAR (copy task1 style) */}
-      <div className={styles.topBar}>
-        <div className={styles.topLeft}>{nameUpper} KEEP GOING</div>
+    <div className={styles.screen} style={bgStyle}>
+      <div className={styles.overlay}>
+        {/* TOP BAR (identical styling via Task1 CSS) */}
+        <div className={styles.topBar}>
+          <div className={styles.topLeft}>{topMessage}</div>
 
-        <div className={styles.topRight}>
-          <div className={styles.scoreItem}>
-            <img src={iconPoints} alt="" className={styles.scoreIcon} />
-            <span className={styles.scoreValue}>{points}</span>
+          <div className={styles.topRight}>
+            <div className={[styles.stat, pulsePoints ? styles.statPulse : ""].join(" ")}>
+              <img ref={pointsTargetRef} src={ICON_POINTS} alt="Points" className={styles.statIcon} />
+              <span className={styles.statNum}>{points}</span>
+            </div>
+
+            <div className={[styles.stat, pulseCuriosity ? styles.statPulse : ""].join(" ")}>
+              <img
+                ref={curiosityTargetRef}
+                src={ICON_CURIOSITY_POINTS}
+                alt="Curiosity points"
+                className={styles.statIcon}
+              />
+              <span className={styles.statNum}>{curiosityPoints}</span>
+            </div>
           </div>
-
-          <div className={styles.scoreItem}>
-            <img src={iconCuriosity} alt="" className={styles.scoreIcon} />
-            <span className={styles.scoreValue}>{curiosityPoints}</span>
-          </div>
         </div>
-      </div>
 
-      {/* points fly +2 */}
-      {pointsFly && (
-        <div className={styles.pointsFly} key={pointsFly.id}>
-          +{pointsFly.value}
+        {/* STATEMENT CARD */}
+        <div ref={statementCardRef} className={styles.statementCard}>
+          {/* ✅ no WHY button in Task3 */}
+          <div className={styles.statementText}>{current?.text || "…"}</div>
         </div>
-      )}
 
-      {/* ✅ centered CORRECT overlay like task1 */}
-      {correctFlash && (
-        <div className={styles.correctOverlay}>
-          <div className={styles.correctBox}>CORRECT</div>
+        {/* ANSWER BUTTONS (correct / not sure / wrong) */}
+        <div className={styles.answerRow}>
+          <button
+            type="button"
+            className={styles.answerBtn}
+            onClick={() => handleAnswer("correct")}
+            aria-label="Yes"
+          >
+            <img src={BTN_CORRECT} alt="Yes" />
+          </button>
+
+          <button
+            type="button"
+            className={styles.answerBtn}
+            onClick={() => handleAnswer("middle")}
+            aria-label="Not sure"
+          >
+            <img src={BTN_MIDDLE} alt="Not sure" />
+          </button>
+
+          <button
+            type="button"
+            className={styles.answerBtn}
+            onClick={() => handleAnswer("wrong")}
+            aria-label="No"
+          >
+            <img src={BTN_WRONG} alt="No" />
+          </button>
         </div>
-      )}
 
-      {/* MAIN CARD */}
-      <div className={styles.card}>
-        <div className={styles.cardTop}>CASE {caseIdx + 1} OF {CASES.length}</div>
-        <div className={styles.cardText}>{current.a_text}</div>
-
-        {phase === "A" && (
-          <div className={styles.choiceRow}>
-            <button className={styles.choiceBtn} onClick={(e) => onAnswerA("YES", e)} aria-label="Yes">
-              <img src={btnCorrect} alt="YES" />
-            </button>
-
-            <button className={styles.choiceBtn} onClick={(e) => onAnswerA("NOT_SURE", e)} aria-label="Not sure">
-              <img src={btnNotSure} alt="NOT SURE" />
-            </button>
-
-            <button className={styles.choiceBtn} onClick={(e) => onAnswerA("NO", e)} aria-label="No">
-              <img src={btnWrong} alt="NO" />
-            </button>
+        {/* REWARD OVERLAY */}
+        {rewardOpen && (
+          <div className={styles.rewardOverlay} aria-hidden="true">
+            <div className={styles.rewardCard}>
+              <div className={styles.rewardText}>{rewardLabel}</div>
+            </div>
           </div>
         )}
 
-        {phase === "B" && (
-          <div className={styles.pathsWrap}>
-            <div className={styles.pathsTitle}>{current.b_title}</div>
+        {/* FLY ITEMS */}
+        {flyItems.map((it) => (
+          <div
+            key={it.id}
+            className={styles.flyWrap}
+            style={{
+              left: it.fromX,
+              top: it.fromY,
+              ["--toX"]: `${it.toX}px`,
+              ["--toY"]: `${it.toY}px`,
+            }}
+            aria-hidden="true"
+          >
+            <div className={styles.flyInner}>
+              <img src={it.icon} alt="" className={styles.flyIcon} />
+              <div className={styles.flyDelta}>{it.delta}</div>
+            </div>
+          </div>
+        ))}
 
-            <div className={styles.pathsGrid}>
-              {current.b_options.map((o) => (
-                <button
-                  key={o.key}
-                  className={styles.pathBtn}
-                  onClick={(e) => onPickPath(o.key, e)}
-                >
-                  <span className={styles.pathKey}>{o.key}</span>
-                  <span className={styles.pathLabel}>{o.label}</span>
+        {/* WRONG POPUP */}
+        {popupOpen && (
+          <div className={styles.popupBackdrop} onMouseDown={closePopup} role="presentation">
+            <div
+              className={styles.popupCard}
+              onMouseDown={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+            >
+              <button type="button" className={styles.popupClose} onClick={closePopup} aria-label="Close">
+                ×
+              </button>
+
+              <div className={styles.popupText}>{popupText}</div>
+            </div>
+          </div>
+        )}
+
+        {/* END POPUP (Task1 style, updated for Task3) */}
+        {endOpen && (
+          <div className={styles.endBackdrop} role="presentation">
+            <div className={styles.endCard} role="dialog" aria-modal="true">
+              <button type="button" className={styles.endClose} onClick={goMainMenu} aria-label="Close">
+                ×
+              </button>
+
+              <div className={styles.endTitle}>BRAVO {nameUpper} YOU NAILED IT!</div>
+
+              <div className={styles.endStats}>
+                <div className={styles.endStatLine}>POINTS: {points}</div>
+                <div className={styles.endStatLine}>CURIOSITY POINTS: {curiosityPoints}</div>
+              </div>
+
+              <div className={styles.endBadges}>
+                {earnedBadges.map((b) => (
+                  <img key={b.id} src={b.src} alt={b.id} className={styles.endBadgeImg} />
+                ))}
+              </div>
+
+              <div className={styles.endActions}>
+                <button type="button" className={styles.endActionBtn} onClick={goMainMenu}>
+                  GO BACK TO MAIN MENU
                 </button>
-              ))}
+                <button type="button" className={styles.endActionBtn} onClick={goTaskSelector}>
+                  COLLECT BADGES AND GO TO TASKS
+                </button>
+              </div>
             </div>
           </div>
         )}
       </div>
-
-      {/* ✅ ACT popup (only after correct in phase A) */}
-      {actOpen && (
-        <div className={styles.modalBackdrop}>
-          <div className={styles.modal}>
-            <button className={styles.modalClose} onClick={() => setActOpen(false)} aria-label="Close">
-              ×
-            </button>
-
-            <div className={styles.modalTitle}>“NOT ALL DECISIONS LIVE IN ONE PLACE.”</div>
-            <div className={styles.modalSub}>DEMOCRATIC SKILL = KNOWING:</div>
-            <ul className={styles.modalList}>
-              <li>WHO DECIDES</li>
-              <li>WHO INFLUENCES</li>
-              <li>WHERE PRESSURE WORKS BEST</li>
-            </ul>
-
-            <div className={styles.modalBody}>{current.act_body}</div>
-
-            <button className={styles.modalCta} onClick={closeActAndGoB}>
-              SHOW ME HOW TO ACT
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ✅ END POPUP like Task1 */}
-      {endOpen && (
-        <div className={styles.endBackdrop}>
-          <div className={styles.endModal}>
-            <button className={styles.endClose} onClick={() => setEndOpen(false)} aria-label="Close">
-              ×
-            </button>
-
-            <div className={styles.endTitle}>BRAVO {nameUpper} YOU NAILED IT!</div>
-            <div className={styles.endMeta}>POINTS: {points}</div>
-            <div className={styles.endMeta}>CURIOSITY POINTS: {curiosityPoints}</div>
-
-            {/* badge image (ako imaš) */}
-            <div className={styles.endBadgeWrap}>
-              {badges?.[0]?.src ? (
-                <img
-                  src={
-                    badges[0].src.startsWith("/")
-                      ? badges[0].src
-                      : `${process.env.PUBLIC_URL}/${badges[0].src}`
-                  }
-                  alt=""
-                  className={styles.endBadge}
-                />
-              ) : null}
-            </div>
-
-            <div className={styles.endBtns}>
-              <button className={styles.endBtn} onClick={goMainMenu}>
-                GO BACK TO MAIN MENU
-              </button>
-              <button className={styles.endBtn} onClick={goTaskSelector}>
-                COLLECT BADGES AND GO TO TASKS
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
