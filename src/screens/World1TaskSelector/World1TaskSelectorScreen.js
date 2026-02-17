@@ -48,134 +48,8 @@ export default function World1TaskSelectorScreen() {
     }
   };
 
-  const safeHas = (key) => {
-    try {
-      const raw = localStorage.getItem(key);
-      return raw !== null && raw !== undefined && raw !== "";
-    } catch {
-      return false;
-    }
-  };
-
   /* ------------------------------------ */
-  /* ✅ UNLOCK LOGIC (ROBUST) */
-  const [progressTick, setProgressTick] = useState(0);
-
-  useEffect(() => {
-    const bump = () => setProgressTick((v) => v + 1);
-
-    const onFocus = () => bump();
-
-    const onStorage = (e) => {
-      if (!e?.key) return;
-      if (
-        e.key.includes("yd_world1_task") ||
-        e.key.includes("yd_scores") ||
-        e.key.includes("yd_progress") ||
-        e.key.includes("yd_task_results")
-      ) {
-        bump();
-      }
-    };
-
-    window.addEventListener("focus", onFocus);
-    window.addEventListener("storage", onStorage);
-    return () => {
-      window.removeEventListener("focus", onFocus);
-      window.removeEventListener("storage", onStorage);
-    };
-  }, []);
-
-  /**
-   * Detect if a task is completed across all historical versions:
-   * - direct keys: yd_world1_taskN, yd_world1_taskN_done, yd_world1_taskN_counted, etc.
-   * - yd_progress structure
-   * - yd_task_results array
-   */
-  const isWorld1TaskDone = useCallback(
-    (taskNumber) => {
-      const n = String(taskNumber);
-
-      // 1) Direct keys (most common in your tasks)
-      const directKeys = [
-        `yd_world1_task${n}`,
-        `yd_world1_task${n}_done`,
-        `yd_world1_task${n}_counted`,
-        `yd_world1_task_${n}`,
-        `yd_task${n}_world1`,
-        `yd_task_${n}_world1`,
-      ];
-
-      for (const k of directKeys) {
-        if (safeHas(k)) return true;
-      }
-
-      // 2) If stored as object, check "finished" flags
-      const obj = safeParse(`yd_world1_task${n}`);
-      if (obj && typeof obj === "object") {
-        if (obj.finished === true || obj.completed === true) return true;
-        // if it has points and timestamp, consider done
-        if (
-          (typeof obj.points === "number" || typeof obj.curiosityPoints === "number") &&
-          (obj.finishedAt || obj.completedAt || obj.endedAt || obj.timestamp)
-        ) {
-          return true;
-        }
-      }
-
-      // 3) yd_progress (some versions store worlds/tasks here)
-      const progress = safeParse("yd_progress");
-      if (progress?.worlds) {
-        const w1 = progress.worlds.world1 || progress.worlds["1"] || progress.worlds.World1;
-        const tasks = w1?.tasks || w1?.taskResults || w1?.results;
-        if (tasks) {
-          const t = tasks[`task${n}`] || tasks[n] || tasks[`Task${n}`];
-          if (t) {
-            if (t.finished === true || t.completed === true) return true;
-            if (typeof t.points === "number" || typeof t.curiosityPoints === "number") return true;
-          }
-        }
-      }
-
-      // 4) yd_task_results array
-      const results = safeParse("yd_task_results");
-      if (Array.isArray(results)) {
-        const found = results.find((r) => {
-          const worldMatch =
-            r?.world === 1 || r?.world === "1" || r?.worldId === 1 || r?.worldId === "1";
-          const taskMatch =
-            r?.task === taskNumber ||
-            r?.task === n ||
-            r?.taskId === taskNumber ||
-            r?.taskId === n ||
-            r?.taskNumber === taskNumber ||
-            r?.taskNumber === n;
-          return worldMatch && taskMatch;
-        });
-        if (found) return true;
-      }
-
-      // 5) LAST RESORT: if you already have scores and taskNumber==1,
-      // allow Task2 access (prevents accidental lock after legacy save)
-      if (taskNumber === 1) {
-        const scores = safeParse("yd_scores");
-        if (scores && (scores.totalPoints > 0 || scores.totalCuriosityPoints > 0)) {
-          return true;
-        }
-      }
-
-      return false;
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [progressTick]
-  );
-
-  const hasTask1 = useMemo(() => isWorld1TaskDone(1), [isWorld1TaskDone]);
-  const hasTask2 = useMemo(() => isWorld1TaskDone(2), [isWorld1TaskDone]);
-  const hasTask3 = useMemo(() => isWorld1TaskDone(3), [isWorld1TaskDone]);
-
-  /* ------------------------------------ */
-  /* ✅ TASK HANDLERS */
+  /* ✅ TASK HANDLERS (NO LOCKING) */
   const handleTask1 = useCallback(() => {
     navigate("/world-1/task-1", { state: player });
   }, [navigate, player]);
@@ -187,6 +61,12 @@ export default function World1TaskSelectorScreen() {
   const handleTask3 = useCallback(() => {
     navigate("/world-1/task-3", { state: player });
   }, [navigate, player]);
+
+  // Task 4: neutral link (#) – no navigation
+  const handleTask4 = useCallback((e) => {
+    e.preventDefault();
+    // optional: could show toast later, but keep it neutral for now
+  }, []);
 
   /* ------------------------------------ */
   /* ACHIEVEMENTS DATA (sum across tasks) */
@@ -234,8 +114,7 @@ export default function World1TaskSelectorScreen() {
         Object.values(tasks).forEach((t) => {
           if (!t) return;
           if (typeof t.points === "number") totalPoints += t.points;
-          if (typeof t.curiosityPoints === "number")
-            totalCuriosityPoints += t.curiosityPoints;
+          if (typeof t.curiosityPoints === "number") totalCuriosityPoints += t.curiosityPoints;
           if (Array.isArray(t.badges)) badges.push(...t.badges);
         });
       });
@@ -248,8 +127,7 @@ export default function World1TaskSelectorScreen() {
     if (Array.isArray(results)) {
       results.forEach((t) => {
         if (typeof t?.points === "number") totalPoints += t.points;
-        if (typeof t?.curiosityPoints === "number")
-          totalCuriosityPoints += t.curiosityPoints;
+        if (typeof t?.curiosityPoints === "number") totalCuriosityPoints += t.curiosityPoints;
         if (Array.isArray(t?.badges)) badges.push(...t.badges);
       });
 
@@ -278,7 +156,7 @@ export default function World1TaskSelectorScreen() {
   const { totalPoints, totalCuriosityPoints, badges } = useMemo(() => {
     return computeTotalsAndBadges();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [achOpen, progressTick]);
+  }, [achOpen]);
 
   const resolveBadgeSrc = (b) => {
     if (typeof b === "string") {
@@ -393,65 +271,65 @@ export default function World1TaskSelectorScreen() {
               START TASK 1
             </button>
           </div>
-{/* TASK 2 (enabled) */}
-<div className={styles.taskItem}>
-  <button
-    type="button"
-    className={styles.taskIconWrap}
-    onClick={handleTask2}
-    aria-label="Task 2"
-  >
-    <img src={task2Img} alt="Task 2" className={styles.taskIcon} />
-  </button>
 
-  <button
-    type="button"
-    className={[styles.taskBtn, styles.taskBtnEnabled].join(" ")}
-    onClick={handleTask2}
-  >
-    START TASK 2
-  </button>
-</div>
-
-{/* TASK 3 (enabled) */}
-<div className={styles.taskItem}>
-  <button
-    type="button"
-    className={styles.taskIconWrap}
-    onClick={handleTask3}
-    aria-label="Task 3"
-  >
-    <img src={task3Img} alt="Task 3" className={styles.taskIcon} />
-  </button>
-
-  <button
-    type="button"
-    className={[styles.taskBtn, styles.taskBtnEnabled].join(" ")}
-    onClick={handleTask3}
-  >
-    START TASK 3
-  </button>
-</div>
-
-
-          {/* TASK 4 (disabled for now) */}
+          {/* TASK 2 */}
           <div className={styles.taskItem}>
             <button
               type="button"
-              className={[styles.taskIconWrap, styles.taskIconDisabled].join(" ")}
-              disabled
-              aria-label="Task 4 locked"
+              className={styles.taskIconWrap}
+              onClick={handleTask2}
+              aria-label="Task 2"
             >
-              <img src={task4Img} alt="Task 4" className={styles.taskIcon} />
+              <img src={task2Img} alt="Task 2" className={styles.taskIcon} />
             </button>
 
             <button
               type="button"
-              className={[styles.taskBtn, styles.taskBtnDisabled].join(" ")}
-              disabled
+              className={[styles.taskBtn, styles.taskBtnEnabled].join(" ")}
+              onClick={handleTask2}
+            >
+              START TASK 2
+            </button>
+          </div>
+
+          {/* TASK 3 */}
+          <div className={styles.taskItem}>
+            <button
+              type="button"
+              className={styles.taskIconWrap}
+              onClick={handleTask3}
+              aria-label="Task 3"
+            >
+              <img src={task3Img} alt="Task 3" className={styles.taskIcon} />
+            </button>
+
+            <button
+              type="button"
+              className={[styles.taskBtn, styles.taskBtnEnabled].join(" ")}
+              onClick={handleTask3}
+            >
+              START TASK 3
+            </button>
+          </div>
+
+          {/* TASK 4 (neutral #) */}
+          <div className={styles.taskItem}>
+            <a
+              href="#"
+              className={styles.taskIconWrap}
+              onClick={handleTask4}
+              aria-label="Task 4"
+            >
+              <img src={task4Img} alt="Task 4" className={styles.taskIcon} />
+            </a>
+
+            <a
+              href="#"
+              className={[styles.taskBtn, styles.taskBtnEnabled].join(" ")}
+              onClick={handleTask4}
             >
               START TASK 4
-            </button>
+            </a>
           </div>
         </div>
 
