@@ -15,112 +15,188 @@ const BG = asset("/world1/task3/bg.png");
 const ICON_POINTS = asset("/world1/task3/points.png");
 const ICON_CURIOSITY_POINTS = asset("/world1/task3/curiositypoints.png");
 
-const BTN_CORRECT = asset("/world1/task3/correct.png"); // YES
-const BTN_MIDDLE = asset("/world1/task3/middle.png"); // NOT SURE
-const BTN_WRONG = asset("/world1/task3/wrong.png"); // NO
+// Part 1 buttons (YES / NOT SURE / NO)
+const BTN_YES = asset("/world1/task3/correct.png");
+const BTN_NOT_SURE = asset("/world1/task3/middle.png");
+const BTN_NO = asset("/world1/task3/wrong.png");
 
+// Badges
 const BADGE_BEGINNER = asset("/world1/task3/beginner.png");
 const BADGE_ADVANCED = asset("/world1/task3/advanced.png");
 const BADGE_EXPERT = asset("/world1/task3/expert.png");
 const BADGE_CURIOSITY = asset("/world1/task3/curiosity.png");
 
-// ✅ TASK 3 (prema dokumentu)
+/**
+ * TASK 3 — “RIGHTS VS. RULES: THE DEMOCRACY TEST”
+ * From doc:
+ * - Per case:
+ *   Part 1 (Is this democratic? Yes/No/Not sure)
+ *      - Identify undemocratic: +2 points (these cases are undemocratic → correct is NO)
+ *      - Not sure: +3 curiosity points + hint + retry once (optional)
+ *   Part 2 (Best response path A/B/C/D)
+ *      - Case 1 explicit scoring: B +10; C +4; A +2; D +0 + warning
+ *      - Others: best response gets +5 (we keep a reasonable mapping; easy to tune)
+ */
+
 const CASES = [
   {
     id: 1,
-    statement:
-      'A journalist publishes an investigation about misuse of public money. The government labels it “harmful” and shuts the outlet down.',
-    // PART 1: Is this democratic? -> (No)
-    part1Correct: "wrong",
-    part1WrongFeedback:
-      "Shutting down independent media is a major rights and accountability problem. In democracy, criticism and investigation must be protected.",
-    part1Hint:
-      "Think: free press is a safeguard. When government shuts down media, who checks power?",
-    // PART 2: Best response path
-    options: [
-      { key: "A", text: "Accept it — the government knows best." },
-      {
-        key: "B",
-        text: "Support legal challenge + public pressure + solidarity with journalists",
-      },
-      { key: "C", text: "Ignore — it’s not my problem." },
-      { key: "D", text: "Fight with threats and violence." },
-    ],
-    part2Correct: "B",
-    part2Feedback: {
-      B: "Democratic response uses institutions + rights protection.",
-      D: "Violence undermines democracy.",
-      A: "Silence/obedience enables abuse.",
-      C: "Silence enables abuse.",
+    caseText:
+      "A journalist publishes an investigation about misuse of public money. The government labels it “harmful” and shuts the outlet down.",
+    part1Correct: "no",
+    hint:
+      "Think about freedom of the press and accountability. Is shutting down media compatible with democracy?",
+    part2: {
+      title: "CHOOSE THE RIGHT PATH",
+      options: [
+        {
+          key: "A",
+          text: "Accept it — the government knows best.",
+          points: 2,
+          feedback: "Silence enables abuse. Democracy needs scrutiny and accountability.",
+        },
+        {
+          key: "B",
+          text: "Support legal challenge + public pressure + solidarity with journalists",
+          points: 10,
+          best: true,
+          feedback: "Democratic response uses institutions + rights protection.",
+        },
+        {
+          key: "C",
+          text: "Ignore — it’s not my problem.",
+          points: 4,
+          feedback: "Silence enables abuse. Rights are protected when people act.",
+        },
+        {
+          key: "D",
+          text: "Fight with threats and violence.",
+          points: 0,
+          warning: true,
+          feedback: "Violence undermines democracy and harms everyone.",
+        },
+      ],
     },
   },
   {
     id: 2,
-    statement:
+    caseText:
       "During a crisis, all gatherings are banned indefinitely, even small peaceful ones, without clear criteria.",
-    part1Correct: "wrong",
-    part1WrongFeedback:
-      "Broad bans without clear limits or oversight can be abusive. Restrictions must be lawful, necessary, proportionate, and reviewed.",
-    part1Hint:
-      "Think: restrictions can exist, but must be time-limited, clear, and supervised.",
-    options: [
-      { key: "A", text: "Okay, safety always comes first, no questions." },
-      { key: "B", text: "Ask for clear rules, time limits, and oversight" },
-      { key: "C", text: "Organize secretly, no matter what." },
-      { key: "D", text: "Spread conspiracy theories." },
-    ],
-    part2Correct: "B",
-    part2Feedback: {
-      B: "Democracy can restrict rights temporarily, but must be proportionate and reviewed.",
-      C: "Risky — can escalate conflict and harm legitimacy.",
-      D: "Disinformation breaks trust.",
-      A: "No oversight = power drift.",
+    part1Correct: "no",
+    hint:
+      "Democracy can limit rights temporarily, but restrictions must be proportionate, time-limited, and reviewed.",
+    part2: {
+      title: "CHOOSE THE RIGHT PATH",
+      options: [
+        {
+          key: "A",
+          text: "Okay, safety always comes first, no questions.",
+          points: 2,
+          feedback: "No oversight = power drift. Democracy needs checks and limits.",
+        },
+        {
+          key: "B",
+          text: "Ask for clear rules, time limits, and oversight",
+          points: 5,
+          best: true,
+          feedback:
+            "Democracy can restrict rights temporarily, but must be proportionate and reviewed.",
+        },
+        {
+          key: "C",
+          text: "Organize secretly, no matter what.",
+          points: 0,
+          warning: true,
+          feedback: "Risky + can escalate. Better: legal accountability and oversight.",
+        },
+        {
+          key: "D",
+          text: "Spread conspiracy theories.",
+          points: 0,
+          warning: true,
+          feedback: "Disinformation breaks trust and weakens democracy.",
+        },
+      ],
     },
   },
   {
     id: 3,
-    statement:
-      'A city votes to ban a minority group from using a public space “because most people feel uncomfortable.”',
-    part1Correct: "wrong",
-    part1WrongFeedback:
-      "Rights aren’t a popularity contest. Majority rule has limits when it harms equal rights.",
-    part1Hint:
-      "Think: democracy protects minorities too — equal access matters.",
-    options: [
-      { key: "A", text: "Majority decides, end of story." },
-      { key: "B", text: "Protect equal rights; challenge discrimination" },
-      { key: "C", text: "Let them use it only at certain times." },
-      { key: "D", text: "Kick them out to avoid conflict." },
-    ],
-    part2Correct: "B",
-    part2Feedback: {
-      B: "Rights aren’t a popularity contest.",
-      C: "Segregation is still discrimination.",
-      A: "Not democratic.",
-      D: "Not democratic.",
+    caseText:
+      "A city votes to ban a minority group from using a public space “because most people feel uncomfortable.”",
+    part1Correct: "no",
+    hint:
+      "Rights are not a popularity contest. Equal protection matters even if the majority dislikes it.",
+    part2: {
+      title: "CHOOSE THE RIGHT PATH",
+      options: [
+        {
+          key: "A",
+          text: "Majority decides, end of story.",
+          points: 0,
+          warning: true,
+          feedback: "Not democratic. Rights protect minorities from majority abuse.",
+        },
+        {
+          key: "B",
+          text: "Protect equal rights; challenge discrimination",
+          points: 5,
+          best: true,
+          feedback: "Rights aren’t a popularity contest.",
+        },
+        {
+          key: "C",
+          text: "Let them use it only at certain times.",
+          points: 2,
+          feedback: "Segregation is still discrimination.",
+        },
+        {
+          key: "D",
+          text: "Kick them out to avoid conflict.",
+          points: 0,
+          warning: true,
+          feedback: "Not democratic. Avoiding conflict by excluding people violates rights.",
+        },
+      ],
     },
   },
   {
     id: 4,
-    statement:
-      'Your friend works in the municipality and offers to “speed up” your paperwork if you give a small gift.',
-    part1Correct: "wrong",
-    part1WrongFeedback:
-      "This breaks fairness and rule of law. Corruption (even ‘small’) undermines equal treatment.",
-    part1Hint:
-      "Think: if rules can be bypassed with gifts, who gets treated fairly?",
-    options: [
-      { key: "A", text: "It’s normal, everyone does it." },
-      { key: "B", text: "Refuse, use official process, report if necessary" },
-      { key: "C", text: "Accept but keep it secret." },
-      { key: "D", text: "Post online accusing everyone without evidence." },
-    ],
-    part2Correct: "B",
-    part2Feedback: {
-      B: "Rule of law is daily behavior, not only politics.",
-      D: "Accountability needs evidence, not chaos.",
-      A: "Normalizing corruption makes institutions weaker.",
-      C: "Secret deals undermine fairness.",
+    caseText:
+      "Your friend works in the municipality and offers to “speed up” your paperwork if you give a small gift.",
+    part1Correct: "no",
+    hint:
+      "Rule of law applies in daily life too. Corruption weakens fairness and trust.",
+    part2: {
+      title: "CHOOSE THE RIGHT PATH",
+      options: [
+        {
+          key: "A",
+          text: "It’s normal, everyone does it.",
+          points: 0,
+          warning: true,
+          feedback: "Normalizing corruption breaks fairness and trust.",
+        },
+        {
+          key: "B",
+          text: "Refuse, use official process, report if necessary",
+          points: 5,
+          best: true,
+          feedback: "Rule of law is daily behavior, not only politics.",
+        },
+        {
+          key: "C",
+          text: "Accept but keep it secret.",
+          points: 2,
+          feedback: "Secrecy + favoritism undermines equal treatment.",
+        },
+        {
+          key: "D",
+          text: "Post online accusing everyone without evidence.",
+          points: 0,
+          warning: true,
+          feedback: "Accountability needs evidence, not chaos.",
+        },
+      ],
     },
   },
 ];
@@ -129,11 +205,11 @@ export default function World1Task3Screen() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // player name comes from state (setup screen) – fallback
   const player = location.state || {};
-  const nameUpper = (player?.name || player?.playerName || "PLAYER")
-    .toString()
-    .toUpperCase();
+  const nameUpper = (player?.name || player?.playerName || "PLAYER").toString().toUpperCase();
 
+  // background
   const bgStyle = useMemo(
     () => ({
       backgroundImage: `url(${BG})`,
@@ -141,6 +217,7 @@ export default function World1Task3Screen() {
     []
   );
 
+  // top message same style as Task1
   const TOP_MESSAGES = useMemo(
     () => [
       `${nameUpper} KEEP GOING`,
@@ -159,18 +236,20 @@ export default function World1Task3Screen() {
     });
   };
 
+  // CASE progression
   const [index, setIndex] = useState(0);
   const current = CASES[index];
 
-  // ✅ phase: "part1" -> "part2"
-  const [phase, setPhase] = useState("part1");
+  // part1 vs part2
+  const [phase, setPhase] = useState("part1"); // "part1" | "part2"
+  const [hintUsed, setHintUsed] = useState(false); // per-case reset
 
+  // points
   const [points, setPoints] = useState(0);
   const [curiosityPoints, setCuriosityPoints] = useState(0);
-  const [correctCountPart1, setCorrectCountPart1] = useState(0);
-  const [correctCountPart2, setCorrectCountPart2] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
 
-  // ✅ reward overlay
+  // ✅ reward overlay like Task1
   const [rewardOpen, setRewardOpen] = useState(false);
   const [rewardLabel, setRewardLabel] = useState("CORRECT");
   const rewardTimerRef = useRef(null);
@@ -188,7 +267,7 @@ export default function World1Task3Screen() {
     };
   }, []);
 
-  // ✅ fly-to-ui
+  // ✅ fly-to-ui animation like Task1
   const pointsTargetRef = useRef(null);
   const curiosityTargetRef = useRef(null);
   const statementCardRef = useRef(null);
@@ -208,8 +287,8 @@ export default function World1Task3Screen() {
 
     if (!fromRect || !toRect) return;
 
-    const fromX = fromRect.left + fromRect.width * 0.62;
-    const fromY = fromRect.top + fromRect.height * 0.35;
+    const fromX = fromRect.left + fromRect.width * 0.55;
+    const fromY = fromRect.top + fromRect.height * 0.45;
 
     const toX = toRect.left + toRect.width * 0.45;
     const toY = toRect.top + toRect.height * 0.5;
@@ -230,7 +309,7 @@ export default function World1Task3Screen() {
     }, 820);
   };
 
-  // popup
+  // popup for feedback/hint
   const [popupOpen, setPopupOpen] = useState(false);
   const [popupText, setPopupText] = useState("");
 
@@ -240,28 +319,22 @@ export default function World1Task3Screen() {
   };
   const closePopup = () => setPopupOpen(false);
 
-  const answerLockRef = useRef(false);
+  // locks
+  const actionLockRef = useRef(false);
 
-  // Not sure once per case
-  const notSureUsedRef = useRef({});
-  const markNotSureUsed = (caseId) => {
-    notSureUsedRef.current = { ...notSureUsedRef.current, [caseId]: true };
-  };
-  const isNotSureUsed = (caseId) => !!notSureUsedRef.current?.[caseId];
-
-  // end popup
+  // end popup like Task1
   const [endOpen, setEndOpen] = useState(false);
   const endLockRef = useRef(false);
 
-  const resolveSkillBadge = (correctTotal) => {
-    if (correctTotal <= 3) return { id: "beginner", src: BADGE_BEGINNER };
-    if (correctTotal <= 6) return { id: "advanced", src: BADGE_ADVANCED };
+  const resolveSkillBadge = (correct) => {
+    if (correct <= 1) return { id: "beginner", src: BADGE_BEGINNER };
+    if (correct <= 3) return { id: "advanced", src: BADGE_ADVANCED };
     return { id: "expert", src: BADGE_EXPERT };
   };
 
-  const buildEarnedBadges = (correctTotal, curiosity) => {
+  const buildEarnedBadges = (correct, curiosity) => {
     const earned = [];
-    earned.push(resolveSkillBadge(correctTotal));
+    earned.push(resolveSkillBadge(correct));
     if (curiosity >= 6) earned.push({ id: "curiosity", src: BADGE_CURIOSITY });
     return earned;
   };
@@ -286,14 +359,12 @@ export default function World1Task3Screen() {
       points: taskPoints,
       curiosityPoints: taskCuriosity,
       badges: badges.map((b) => ({ id: b.id, src: b.src })),
-      correctPart1: correctCountPart1,
-      correctPart2: correctCountPart2,
-      totalCases: CASES.length,
+      correctCount,
+      totalQuestions: CASES.length,
       finishedAt: Date.now(),
     });
 
-    const prev =
-      safeRead("yd_scores") || { totalPoints: 0, totalCuriosityPoints: 0, badges: [] };
+    const prev = safeRead("yd_scores") || { totalPoints: 0, totalCuriosityPoints: 0, badges: [] };
 
     const markerKey = "yd_world1_task3_counted";
     const alreadyCounted = safeRead(markerKey);
@@ -318,9 +389,7 @@ export default function World1Task3Screen() {
     if (endLockRef.current) return;
     endLockRef.current = true;
 
-    const correctTotal = correctCountPart1 + correctCountPart2;
-    const earned = buildEarnedBadges(correctTotal, curiosityPoints);
-
+    const earned = buildEarnedBadges(correctCount, curiosityPoints);
     saveResultsForAchievements({
       taskPoints: points,
       taskCuriosity: curiosityPoints,
@@ -342,93 +411,94 @@ export default function World1Task3Screen() {
       }
       return next;
     });
+
+    // reset
     setPhase("part1");
+    setHintUsed(false);
   };
 
-  // PART 1 (YES/NO/MAYBE)
+  // PART 1 handler (Yes / Not sure / No)
   const handlePart1 = (choice) => {
-    if (!current || answerLockRef.current || endOpen) return;
-    if (phase !== "part1") return;
+    if (!current || actionLockRef.current || endOpen || phase !== "part1") return;
 
-    answerLockRef.current = true;
+    actionLockRef.current = true;
     pickNewTopMessage();
 
-    // NOT SURE -> +3 curiosity, show hint
-    if (choice === "middle") {
-      if (isNotSureUsed(current.id)) {
-        openPopup("You already used NOT SURE. Make a choice now 🙂");
-        window.setTimeout(() => {
-          answerLockRef.current = false;
-        }, 250);
-        return;
-      }
-
-      markNotSureUsed(current.id);
-
-      makeFly({ type: "curiosity", icon: ICON_CURIOSITY_POINTS, delta: "+3" });
-      window.setTimeout(() => setCuriosityPoints((c) => c + 3), 520);
-
-      openPopup(current.part1Hint || "Hint: think about rights + limits on power.");
-      window.setTimeout(() => {
-        answerLockRef.current = false;
-      }, 250);
-      return;
-    }
-
+    // correct for these cases = "no"
     if (choice === current.part1Correct) {
-      showReward("CORRECT", 520);
-      setCorrectCountPart1((c) => c + 1);
+      setCorrectCount((c) => c + 1);
 
+      showReward("CORRECT", 520);
       makeFly({ type: "points", icon: ICON_POINTS, delta: "+2" });
       window.setTimeout(() => setPoints((p) => p + 2), 520);
 
       window.setTimeout(() => {
         setPhase("part2");
-        answerLockRef.current = false;
-      }, 650);
+        actionLockRef.current = false;
+      }, 700);
 
       return;
     }
 
-    openPopup(current.part1WrongFeedback || "Not quite. Think again.");
-    window.setTimeout(() => {
-      answerLockRef.current = false;
-    }, 250);
-  };
+    // Not sure: +3 curiosity, hint, retry once
+    if (choice === "maybe" && !hintUsed) {
+      setHintUsed(true);
 
-  // PART 2 (A/B/C/D)
-  const handlePart2 = (key) => {
-    if (!current || answerLockRef.current || endOpen) return;
-    if (phase !== "part2") return;
+      showReward("CURIOSITY", 520);
+      makeFly({ type: "curiosity", icon: ICON_CURIOSITY_POINTS, delta: "+3" });
+      window.setTimeout(() => setCuriosityPoints((c) => c + 3), 520);
 
-    answerLockRef.current = true;
-    pickNewTopMessage();
-
-    if (key === current.part2Correct) {
-      showReward("CORRECT", 520);
-      setCorrectCountPart2((c) => c + 1);
-
-      makeFly({ type: "points", icon: ICON_POINTS, delta: "+5" });
-      window.setTimeout(() => setPoints((p) => p + 5), 520);
+      openPopup(current.hint || "Think again and try once more.");
 
       window.setTimeout(() => {
-        goNextCase();
-        answerLockRef.current = false;
-      }, 720);
+        actionLockRef.current = false;
+      }, 250);
 
       return;
     }
 
-    openPopup(
-      current.part2Feedback?.[key] ||
-        "Not quite. Choose the path that protects rights and institutions."
-    );
-
+    // wrong: feedback only, stay in part1
+    openPopup("Not quite. Think about rights, fairness, and accountability.");
     window.setTimeout(() => {
-      answerLockRef.current = false;
+      actionLockRef.current = false;
     }, 250);
   };
 
+  // PART 2 handler (A/B/C/D)
+  const handlePart2 = (optKey) => {
+    if (!current || actionLockRef.current || endOpen || phase !== "part2") return;
+
+    actionLockRef.current = true;
+    pickNewTopMessage();
+
+    const opt = current.part2.options.find((o) => o.key === optKey);
+    if (!opt) {
+      actionLockRef.current = false;
+      return;
+    }
+
+    // award points
+    const delta = typeof opt.points === "number" ? opt.points : 0;
+    if (delta > 0) {
+      makeFly({ type: "points", icon: ICON_POINTS, delta: `+${delta}` });
+      window.setTimeout(() => setPoints((p) => p + delta), 520);
+    }
+
+    if (opt.best) showReward("CORRECT", 520);
+    else if (opt.warning) showReward("WARNING", 520);
+    else showReward("OK", 520);
+
+    // show feedback popup (no OK button, only X / outside click)
+    openPopup(opt.feedback || "Noted.");
+
+    // after user closes popup → go next
+    // we’ll listen to popup close via effect below
+    window.setTimeout(() => {
+      actionLockRef.current = false;
+    }, 250);
+  };
+
+  // close popups on ESC
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "Escape" && popupOpen) closePopup();
@@ -439,63 +509,108 @@ export default function World1Task3Screen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [popupOpen, endOpen]);
 
-  const correctTotal = correctCountPart1 + correctCountPart2;
-  const earnedBadges = buildEarnedBadges(correctTotal, curiosityPoints);
+  // when popup closes and we were in part2 → proceed to next case
+  useEffect(() => {
+    if (!popupOpen && phase === "part2" && !endOpen) {
+      // small guard to avoid firing on mount
+      // only move if we already answered part2 (we detect by keeping phase part2)
+      // but we should not auto-advance immediately on mount, so require current index stable
+    }
+  }, [popupOpen, phase, endOpen]);
+
+  const earnedBadges = buildEarnedBadges(correctCount, curiosityPoints);
+
+  // Custom layout styles for PART 2 (Figma-like: text then options under)
+  const part2WrapStyle = {
+    width: "100%",
+    maxWidth: 980,
+    margin: "0 auto",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  };
+
+  const part2TextStyle = {
+    width: "100%",
+    textAlign: "center",
+    fontSize: 28,
+    lineHeight: 1.2,
+    padding: "10px 18px 0",
+  };
+
+  const part2TitleStyle = {
+    marginTop: 18,
+    fontSize: 18,
+    letterSpacing: 1,
+    opacity: 0.95,
+  };
+
+  const part2GridStyle = {
+    width: "100%",
+    maxWidth: 820,
+    marginTop: 22,
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: 16,
+    padding: "0 18px 18px",
+  };
+
+  const part2BtnStyle = {
+    width: "100%",
+    background: "rgba(255,255,255,0.95)",
+    border: "2px solid rgba(255,255,255,0.6)",
+    borderRadius: 18,
+    padding: "18px 18px",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    gap: 14,
+    minHeight: 86,
+  };
+
+  const letterStyle = {
+    width: 42,
+    height: 42,
+    borderRadius: 999,
+    background: "rgba(255,255,255,0.8)",
+    border: "2px solid rgba(0,0,0,0.08)",
+    display: "grid",
+    placeItems: "center",
+    fontWeight: 900,
+    fontSize: 18,
+    color: "#C95A3E",
+    flex: "0 0 auto",
+  };
+
+  const optTextStyle = {
+    fontWeight: 800,
+    textTransform: "uppercase",
+    fontSize: 14,
+    lineHeight: 1.15,
+    color: "#C95A3E",
+    textAlign: "left",
+  };
+
+  // after choosing an option in part2, we want: close popup -> go next
+  // easiest: when popupOpen closes AND we are in part2, advance.
+  const prevPopupOpenRef = useRef(false);
+  useEffect(() => {
+    const wasOpen = prevPopupOpenRef.current;
+    prevPopupOpenRef.current = popupOpen;
+
+    if (wasOpen && !popupOpen && phase === "part2" && !endOpen) {
+      // advance after feedback closed
+      window.setTimeout(() => {
+        goNextCase();
+      }, 120);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [popupOpen, phase, endOpen]);
 
   return (
     <div className={styles.screen} style={bgStyle}>
-      {/* ✅ Local CSS (bez inline objekata) */}
-      <style>{`
-        .t3-part2Wrap{
-          margin-top: 18px;
-          width: min(840px, 100%);
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 14px;
-          justify-content: center;
-        }
-        .t3-optionBtn{
-          width: 100%;
-          display: grid;
-          grid-template-columns: 56px 1fr;
-          align-items: center;
-          gap: 12px;
-          padding: 14px 16px;
-          border-radius: 14px;
-          border: none;
-          cursor: pointer;
-          background: rgba(255,255,255,0.92);
-          box-shadow: 0 10px 26px rgba(0,0,0,0.18);
-        }
-        .t3-optionLetter{
-          width: 46px;
-          height: 46px;
-          border-radius: 999px;
-          display: grid;
-          place-items: center;
-          font-weight: 900;
-          background: rgba(255,255,255,0.85);
-          border: 2px solid rgba(0,0,0,0.08);
-          color: #C85A2A;
-        }
-        .t3-optionText{
-          font-weight: 900;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          font-size: 12.5px;
-          line-height: 1.25;
-          color: #C85A2A;
-          text-align: left;
-        }
-        @media (max-width: 760px){
-          .t3-part2Wrap{
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
-
       <div className={styles.overlay}>
-        {/* TOP BAR */}
+        {/* TOP BAR (identical styling via Task1 CSS) */}
         <div className={styles.topBar}>
           <div className={styles.topLeft}>{topMessage}</div>
 
@@ -519,65 +634,75 @@ export default function World1Task3Screen() {
 
         {/* MAIN CARD */}
         <div ref={statementCardRef} className={styles.statementCard}>
-          {/* ✅ NEMA “CASE 1 OF 4” / “CHOOSE THE RIGHT PATH” crnog teksta */}
+          {/* ✅ NO BLACK "CASE 1 OF 4" text rendered at all */}
+          {phase === "part1" ? (
+            <>
+              <div className={styles.statementText}>{current?.caseText || "…"}</div>
+            </>
+          ) : (
+            <div style={part2WrapStyle}>
+              <div style={part2TextStyle}>{current?.caseText || "…"}</div>
+              <div style={part2TitleStyle}>{current?.part2?.title || "CHOOSE THE RIGHT PATH"}</div>
 
-          {/* statement */}
-          <div className={styles.statementText} style={{ marginTop: 4, textAlign: "center" }}>
-            {current?.statement || "…"}
-          </div>
-
-          {/* PART 1 */}
-          {phase === "part1" && (
-            <div style={{ marginTop: 14 }}>
-              <div className={styles.answerRow} style={{ marginTop: 0 }}>
-                <button
-                  type="button"
-                  className={styles.answerBtn}
-                  onClick={() => handlePart1("correct")}
-                  aria-label="Yes"
-                >
-                  <img src={BTN_CORRECT} alt="Yes" />
-                </button>
-
-                <button
-                  type="button"
-                  className={styles.answerBtn}
-                  onClick={() => handlePart1("middle")}
-                  aria-label="Not sure"
-                >
-                  <img src={BTN_MIDDLE} alt="Not sure" />
-                </button>
-
-                <button
-                  type="button"
-                  className={styles.answerBtn}
-                  onClick={() => handlePart1("wrong")}
-                  aria-label="No"
-                >
-                  <img src={BTN_WRONG} alt="No" />
-                </button>
+              <div style={part2GridStyle}>
+                {current?.part2?.options?.map((o) => (
+                  <button
+                    key={o.key}
+                    type="button"
+                    onClick={() => handlePart2(o.key)}
+                    style={part2BtnStyle}
+                    aria-label={`Option ${o.key}`}
+                  >
+                    <div style={letterStyle}>{o.key}</div>
+                    <div style={optTextStyle}>{o.text}</div>
+                  </button>
+                ))}
               </div>
             </div>
           )}
-
-          {/* PART 2 (✅ ispod teksta) */}
-          {phase === "part2" && (
-            <div className="t3-part2Wrap" aria-label="Choose the right path">
-              {current?.options?.map((opt) => (
-                <button
-                  key={opt.key}
-                  type="button"
-                  className="t3-optionBtn"
-                  onClick={() => handlePart2(opt.key)}
-                  aria-label={`Option ${opt.key}`}
-                >
-                  <div className="t3-optionLetter">{opt.key}</div>
-                  <div className="t3-optionText">{opt.text}</div>
-                </button>
-              ))}
-            </div>
-          )}
         </div>
+
+        {/* PART 1 ANSWERS — MUST be BELOW the red box (like Task1) */}
+        {phase === "part1" && (
+          <div
+            className={styles.answerRow}
+            style={{
+              position: "relative",
+              left: "auto",
+              right: "auto",
+              bottom: "auto",
+              transform: "none",
+              marginTop: 22,
+            }}
+          >
+            <button
+              type="button"
+              className={styles.answerBtn}
+              onClick={() => handlePart1("yes")}
+              aria-label="Yes"
+            >
+              <img src={BTN_YES} alt="Yes" />
+            </button>
+
+            <button
+              type="button"
+              className={styles.answerBtn}
+              onClick={() => handlePart1("maybe")}
+              aria-label="Not sure"
+            >
+              <img src={BTN_NOT_SURE} alt="Not sure" />
+            </button>
+
+            <button
+              type="button"
+              className={styles.answerBtn}
+              onClick={() => handlePart1("no")}
+              aria-label="No"
+            >
+              <img src={BTN_NO} alt="No" />
+            </button>
+          </div>
+        )}
 
         {/* REWARD OVERLAY */}
         {rewardOpen && (
@@ -608,7 +733,7 @@ export default function World1Task3Screen() {
           </div>
         ))}
 
-        {/* POPUP */}
+        {/* FEEDBACK/HINT POPUP (NO OK BUTTON, only X/outside) */}
         {popupOpen && (
           <div className={styles.popupBackdrop} onMouseDown={closePopup} role="presentation">
             <div
@@ -620,12 +745,13 @@ export default function World1Task3Screen() {
               <button type="button" className={styles.popupClose} onClick={closePopup} aria-label="Close">
                 ×
               </button>
+
               <div className={styles.popupText}>{popupText}</div>
             </div>
           </div>
         )}
 
-        {/* END POPUP */}
+        {/* END POPUP (Task1 style, updated for Task3) */}
         {endOpen && (
           <div className={styles.endBackdrop} role="presentation">
             <div className={styles.endCard} role="dialog" aria-modal="true">
