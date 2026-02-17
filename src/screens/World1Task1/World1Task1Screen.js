@@ -137,7 +137,6 @@ export default function World1Task1Screen() {
 
   // ✅ WHY counter must NOT create side-effects inside setState (StrictMode double-call)
   const whyUsesRef = useRef(0); // 0..2
-  const [whyUses, setWhyUses] = useState(0); // not shown, but useful
 
   /* ------------------------------------ */
   /* TOP MESSAGE ROTATION */
@@ -456,10 +455,7 @@ export default function World1Task1Screen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endOpen]);
 
-  const earnedBadges = useMemo(() => buildEarnedBadges(correctCount, curiosityPoints), [
-    correctCount,
-    curiosityPoints,
-  ]);
+  const earnedBadges = buildEarnedBadges(correctCount, curiosityPoints);
 
   return (
     <div className={styles.screen} style={bgStyle}>
@@ -542,8 +538,8 @@ export default function World1Task1Screen() {
             style={{
               left: it.fromX,
               top: it.fromY,
-              ["--toX"]: `${it.toX}px`,
-              ["--toY"]: `${it.toY}px`,
+              "--toX": `${it.toX}px`,
+              "--toY": `${it.toY}px`,
             }}
             aria-hidden="true"
           >

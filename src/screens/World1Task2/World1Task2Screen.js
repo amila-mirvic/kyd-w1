@@ -109,7 +109,7 @@ export default function World1Task2Screen() {
 
   // ✅ SCORE
   const [points, setPoints] = useState(0);
-  const [curiosityPoints, setCuriosityPoints] = useState(0);
+  const [curiosityPoints] = useState(0);
 
   // ✅ Fly-to-UI animation (COPIED pattern from Task1)
   const pointsTargetRef = useRef(null);
