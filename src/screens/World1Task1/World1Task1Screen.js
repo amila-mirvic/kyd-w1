@@ -3,8 +3,12 @@ import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./World1Task1Screen.module.css";
 
 export default function World1Task1Screen() {
+
   const location = useLocation();
   const navigate = useNavigate();
+
+  // track WHY usage without keeping the value (prevents eslint no-unused-vars)
+const [, setWhyUses] = useState(0);
 
   // ✅ get player from router state OR localStorage fallback
   const player = useMemo(() => {
