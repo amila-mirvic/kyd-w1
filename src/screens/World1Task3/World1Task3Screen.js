@@ -7,7 +7,6 @@ import styles from "../World1Task1/World1Task1Screen.module.css";
 // ⬇️ prilagodi ove rute ako su ti drugačije u projektu
 const MAIN_MENU_ROUTE = "/world1";
 const TASK_SELECTOR_ROUTE = "/world1/tasks";
-const TASK3_ROUTE = "/world1/task3";
 
 const asset = (p) => `${process.env.PUBLIC_URL}${p}`;
 
@@ -17,39 +16,112 @@ const ICON_POINTS = asset("/world1/task3/points.png");
 const ICON_CURIOSITY_POINTS = asset("/world1/task3/curiositypoints.png");
 
 const BTN_CORRECT = asset("/world1/task3/correct.png"); // YES
-const BTN_MIDDLE = asset("/world1/task3/middle.png");   // NOT SURE
-const BTN_WRONG = asset("/world1/task3/wrong.png");     // NO
+const BTN_MIDDLE = asset("/world1/task3/middle.png"); // NOT SURE
+const BTN_WRONG = asset("/world1/task3/wrong.png"); // NO
 
 const BADGE_BEGINNER = asset("/world1/task3/beginner.png");
 const BADGE_ADVANCED = asset("/world1/task3/advanced.png");
 const BADGE_EXPERT = asset("/world1/task3/expert.png");
 const BADGE_CURIOSITY = asset("/world1/task3/curiosity.png");
 
-// ✅ zamijeni tekstove/tačne odgovore po potrebi (ovo je primjer strukture)
-const STATEMENTS = [
+// ✅ TASK 3 (prema dokumentu)
+const CASES = [
   {
     id: 1,
-    text: "A journalist publishes an investigation about misuse of public money. The government labels it “harmful” and shuts the outlet down.",
-    correct: "wrong", // ✅ (example) choose correct/middle/wrong
-    wrongFeedback: "Not quite. Shutting down media is a serious rights issue.",
+    statement:
+      'A journalist publishes an investigation about misuse of public money. The government labels it “harmful” and shuts the outlet down.',
+    // PART 1: Is this democratic? -> (No)
+    part1Correct: "wrong",
+    part1WrongFeedback:
+      "Shutting down independent media is a major rights and accountability problem. In democracy, criticism and investigation must be protected.",
+    part1Hint:
+      "Think: free press is a safeguard. When government shuts down media, who checks power?",
+    // PART 2: Best response path
+    options: [
+      { key: "A", text: "Accept it — the government knows best." },
+      {
+        key: "B",
+        text: "Support legal challenge + public pressure + solidarity with journalists",
+      },
+      { key: "C", text: "Ignore — it’s not my problem." },
+      { key: "D", text: "Fight with threats and violence." },
+    ],
+    part2Correct: "B",
+    part2Feedback: {
+      B: "Democratic response uses institutions + rights protection.",
+      D: "Violence undermines democracy.",
+      A: "Silence/obedience enables abuse.",
+      C: "Silence enables abuse.",
+    },
   },
   {
     id: 2,
-    text: "The government passes a law allowing it to ban protests for “public order” without clear limits or oversight.",
-    correct: "wrong",
-    wrongFeedback: "Not quite. Broad bans without oversight can be abusive.",
+    statement:
+      "During a crisis, all gatherings are banned indefinitely, even small peaceful ones, without clear criteria.",
+    part1Correct: "wrong",
+    part1WrongFeedback:
+      "Broad bans without clear limits or oversight can be abusive. Restrictions must be lawful, necessary, proportionate, and reviewed.",
+    part1Hint:
+      "Think: restrictions can exist, but must be time-limited, clear, and supervised.",
+    options: [
+      { key: "A", text: "Okay, safety always comes first, no questions." },
+      { key: "B", text: "Ask for clear rules, time limits, and oversight" },
+      { key: "C", text: "Organize secretly, no matter what." },
+      { key: "D", text: "Spread conspiracy theories." },
+    ],
+    part2Correct: "B",
+    part2Feedback: {
+      B: "Democracy can restrict rights temporarily, but must be proportionate and reviewed.",
+      C: "Risky — can escalate conflict and harm legitimacy.",
+      D: "Disinformation breaks trust.",
+      A: "No oversight = power drift.",
+    },
   },
   {
     id: 3,
-    text: "A new rule requires all NGOs receiving foreign donations to register and publish donors, with vague penalties.",
-    correct: "middle",
-    wrongFeedback: "Not quite. Transparency can be okay, but vague penalties are risky.",
+    statement:
+      'A city votes to ban a minority group from using a public space “because most people feel uncomfortable.”',
+    part1Correct: "wrong",
+    part1WrongFeedback:
+      "Rights aren’t a popularity contest. Majority rule has limits when it harms equal rights.",
+    part1Hint:
+      "Think: democracy protects minorities too — equal access matters.",
+    options: [
+      { key: "A", text: "Majority decides, end of story." },
+      { key: "B", text: "Protect equal rights; challenge discrimination" },
+      { key: "C", text: "Let them use it only at certain times." },
+      { key: "D", text: "Kick them out to avoid conflict." },
+    ],
+    part2Correct: "B",
+    part2Feedback: {
+      B: "Rights aren’t a popularity contest.",
+      C: "Segregation is still discrimination.",
+      A: "Not democratic.",
+      D: "Not democratic.",
+    },
   },
   {
     id: 4,
-    text: "An election commission changes polling station locations with 24h notice, disproportionately affecting one region.",
-    correct: "wrong",
-    wrongFeedback: "Not quite. Late changes can undermine fair access.",
+    statement:
+      'Your friend works in the municipality and offers to “speed up” your paperwork if you give a small gift.',
+    part1Correct: "wrong",
+    part1WrongFeedback:
+      "This breaks fairness and rule of law. Corruption (even ‘small’) undermines equal treatment.",
+    part1Hint:
+      "Think: if rules can be bypassed with gifts, who gets treated fairly?",
+    options: [
+      { key: "A", text: "It’s normal, everyone does it." },
+      { key: "B", text: "Refuse, use official process, report if necessary" },
+      { key: "C", text: "Accept but keep it secret." },
+      { key: "D", text: "Post online accusing everyone without evidence." },
+    ],
+    part2Correct: "B",
+    part2Feedback: {
+      B: "Rule of law is daily behavior, not only politics.",
+      D: "Accountability needs evidence, not chaos.",
+      A: "Normalizing corruption makes institutions weaker.",
+      C: "Secret deals undermine fairness.",
+    },
   },
 ];
 
@@ -57,11 +129,11 @@ export default function World1Task3Screen() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // player name comes from state (setup screen) – fallback
   const player = location.state || {};
-  const nameUpper = (player?.name || player?.playerName || "PLAYER").toString().toUpperCase();
+  const nameUpper = (player?.name || player?.playerName || "PLAYER")
+    .toString()
+    .toUpperCase();
 
-  // background
   const bgStyle = useMemo(
     () => ({
       backgroundImage: `url(${BG})`,
@@ -69,7 +141,6 @@ export default function World1Task3Screen() {
     []
   );
 
-  // top message same style as Task1
   const TOP_MESSAGES = useMemo(
     () => [
       `${nameUpper} KEEP GOING`,
@@ -79,6 +150,7 @@ export default function World1Task3Screen() {
     ],
     [nameUpper]
   );
+
   const [topMessage, setTopMessage] = useState(TOP_MESSAGES[0]);
   const pickNewTopMessage = () => {
     setTopMessage((prev) => {
@@ -87,15 +159,18 @@ export default function World1Task3Screen() {
     });
   };
 
-  // game state
   const [index, setIndex] = useState(0);
-  const current = STATEMENTS[index];
+  const current = CASES[index];
+
+  // ✅ phase: "part1" -> "part2"
+  const [phase, setPhase] = useState("part1");
 
   const [points, setPoints] = useState(0);
   const [curiosityPoints, setCuriosityPoints] = useState(0);
-  const [correctCount, setCorrectCount] = useState(0);
+  const [correctCountPart1, setCorrectCountPart1] = useState(0);
+  const [correctCountPart2, setCorrectCountPart2] = useState(0);
 
-  // ✅ reward overlay like Task1
+  // ✅ reward overlay
   const [rewardOpen, setRewardOpen] = useState(false);
   const [rewardLabel, setRewardLabel] = useState("CORRECT");
   const rewardTimerRef = useRef(null);
@@ -113,7 +188,7 @@ export default function World1Task3Screen() {
     };
   }, []);
 
-  // ✅ fly-to-ui animation like Task1
+  // ✅ fly-to-ui
   const pointsTargetRef = useRef(null);
   const curiosityTargetRef = useRef(null);
   const statementCardRef = useRef(null);
@@ -155,7 +230,7 @@ export default function World1Task3Screen() {
     }, 820);
   };
 
-  // popup for wrong feedback (Task1 style)
+  // popup
   const [popupOpen, setPopupOpen] = useState(false);
   const [popupText, setPopupText] = useState("");
 
@@ -165,23 +240,29 @@ export default function World1Task3Screen() {
   };
   const closePopup = () => setPopupOpen(false);
 
-  // locks
   const answerLockRef = useRef(false);
 
-  // end popup like Task1
+  // Not sure once per case
+  const notSureUsedRef = useRef({});
+  const markNotSureUsed = (caseId) => {
+    notSureUsedRef.current = { ...notSureUsedRef.current, [caseId]: true };
+  };
+  const isNotSureUsed = (caseId) => !!notSureUsedRef.current?.[caseId];
+
+  // end popup
   const [endOpen, setEndOpen] = useState(false);
   const endLockRef = useRef(false);
 
-  const resolveSkillBadge = (correct) => {
-    if (correct <= 1) return { id: "beginner", src: BADGE_BEGINNER };
-    if (correct <= 3) return { id: "advanced", src: BADGE_ADVANCED };
+  const resolveSkillBadge = (correctTotal) => {
+    if (correctTotal <= 3) return { id: "beginner", src: BADGE_BEGINNER };
+    if (correctTotal <= 6) return { id: "advanced", src: BADGE_ADVANCED };
     return { id: "expert", src: BADGE_EXPERT };
   };
 
-  const buildEarnedBadges = (correct, curiosity) => {
+  const buildEarnedBadges = (correctTotal, curiosity) => {
     const earned = [];
-    earned.push(resolveSkillBadge(correct));
-    if (curiosity >= 5) earned.push({ id: "curiosity", src: BADGE_CURIOSITY });
+    earned.push(resolveSkillBadge(correctTotal));
+    if (curiosity >= 6) earned.push({ id: "curiosity", src: BADGE_CURIOSITY });
     return earned;
   };
 
@@ -205,12 +286,14 @@ export default function World1Task3Screen() {
       points: taskPoints,
       curiosityPoints: taskCuriosity,
       badges: badges.map((b) => ({ id: b.id, src: b.src })),
-      correctCount,
-      totalQuestions: STATEMENTS.length,
+      correctPart1: correctCountPart1,
+      correctPart2: correctCountPart2,
+      totalCases: CASES.length,
       finishedAt: Date.now(),
     });
 
-    const prev = safeRead("yd_scores") || { totalPoints: 0, totalCuriosityPoints: 0, badges: [] };
+    const prev =
+      safeRead("yd_scores") || { totalPoints: 0, totalCuriosityPoints: 0, badges: [] };
 
     const markerKey = "yd_world1_task3_counted";
     const alreadyCounted = safeRead(markerKey);
@@ -235,7 +318,9 @@ export default function World1Task3Screen() {
     if (endLockRef.current) return;
     endLockRef.current = true;
 
-    const earned = buildEarnedBadges(correctCount, curiosityPoints);
+    const correctTotal = correctCountPart1 + correctCountPart2;
+    const earned = buildEarnedBadges(correctTotal, curiosityPoints);
+
     saveResultsForAchievements({
       taskPoints: points,
       taskCuriosity: curiosityPoints,
@@ -248,47 +333,102 @@ export default function World1Task3Screen() {
   const goMainMenu = () => navigate(MAIN_MENU_ROUTE, { state: player });
   const goTaskSelector = () => navigate(TASK_SELECTOR_ROUTE, { state: player });
 
-  const goNext = () => {
+  const goNextCase = () => {
     setIndex((i) => {
       const next = i + 1;
-      if (next >= STATEMENTS.length) {
+      if (next >= CASES.length) {
         window.setTimeout(() => openEndPopup(), 80);
         return i;
       }
       return next;
     });
+    setPhase("part1");
   };
 
-  const handleAnswer = (choice) => {
+  // PART 1 (YES/NO/MAYBE)
+  const handlePart1 = (choice) => {
     if (!current || answerLockRef.current || endOpen) return;
-    answerLockRef.current = true;
+    if (phase !== "part1") return;
 
+    answerLockRef.current = true;
     pickNewTopMessage();
 
-    if (choice === current.correct) {
+    // NOT SURE -> +3 curiosity, show hint
+    if (choice === "middle") {
+      if (isNotSureUsed(current.id)) {
+        openPopup("You already used NOT SURE. Make a choice now 🙂");
+        window.setTimeout(() => {
+          answerLockRef.current = false;
+        }, 250);
+        return;
+      }
+
+      markNotSureUsed(current.id);
+
+      makeFly({ type: "curiosity", icon: ICON_CURIOSITY_POINTS, delta: "+3" });
+      window.setTimeout(() => setCuriosityPoints((c) => c + 3), 520);
+
+      openPopup(current.part1Hint || "Hint: think about rights + limits on power.");
+      window.setTimeout(() => {
+        answerLockRef.current = false;
+      }, 250);
+      return;
+    }
+
+    if (choice === current.part1Correct) {
       showReward("CORRECT", 520);
+      setCorrectCountPart1((c) => c + 1);
 
-      setCorrectCount((c) => c + 1);
-
-      // +2 points (Task1 behavior)
       makeFly({ type: "points", icon: ICON_POINTS, delta: "+2" });
       window.setTimeout(() => setPoints((p) => p + 2), 520);
 
       window.setTimeout(() => {
-        goNext();
+        setPhase("part2");
         answerLockRef.current = false;
-      }, 700);
+      }, 650);
 
       return;
     }
 
-    openPopup(current.wrongFeedback || "Not quite. Think again.");
+    openPopup(current.part1WrongFeedback || "Not quite. Think again.");
     window.setTimeout(() => {
       answerLockRef.current = false;
     }, 250);
   };
 
-  // close popups on ESC
+  // PART 2 (A/B/C/D)
+  const handlePart2 = (key) => {
+    if (!current || answerLockRef.current || endOpen) return;
+    if (phase !== "part2") return;
+
+    answerLockRef.current = true;
+    pickNewTopMessage();
+
+    if (key === current.part2Correct) {
+      showReward("CORRECT", 520);
+      setCorrectCountPart2((c) => c + 1);
+
+      makeFly({ type: "points", icon: ICON_POINTS, delta: "+5" });
+      window.setTimeout(() => setPoints((p) => p + 5), 520);
+
+      window.setTimeout(() => {
+        goNextCase();
+        answerLockRef.current = false;
+      }, 720);
+
+      return;
+    }
+
+    openPopup(
+      current.part2Feedback?.[key] ||
+        "Not quite. Choose the path that protects rights and institutions."
+    );
+
+    window.setTimeout(() => {
+      answerLockRef.current = false;
+    }, 250);
+  };
+
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "Escape" && popupOpen) closePopup();
@@ -299,15 +439,65 @@ export default function World1Task3Screen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [popupOpen, endOpen]);
 
-  const earnedBadges = useMemo(() => buildEarnedBadges(correctCount, curiosityPoints), [
-    correctCount,
-    curiosityPoints,
-  ]);
+  const earnedBadges = useMemo(() => {
+    const correctTotal = correctCountPart1 + correctCountPart2;
+    return buildEarnedBadges(correctTotal, curiosityPoints);
+  }, [correctCountPart1, correctCountPart2, curiosityPoints]);
 
   return (
     <div className={styles.screen} style={bgStyle}>
+      {/* ✅ Local CSS (bez inline objekata) */}
+      <style>{`
+        .t3-part2Wrap{
+          margin-top: 18px;
+          width: min(840px, 100%);
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 14px;
+          justify-content: center;
+        }
+        .t3-optionBtn{
+          width: 100%;
+          display: grid;
+          grid-template-columns: 56px 1fr;
+          align-items: center;
+          gap: 12px;
+          padding: 14px 16px;
+          border-radius: 14px;
+          border: none;
+          cursor: pointer;
+          background: rgba(255,255,255,0.92);
+          box-shadow: 0 10px 26px rgba(0,0,0,0.18);
+        }
+        .t3-optionLetter{
+          width: 46px;
+          height: 46px;
+          border-radius: 999px;
+          display: grid;
+          place-items: center;
+          font-weight: 900;
+          background: rgba(255,255,255,0.85);
+          border: 2px solid rgba(0,0,0,0.08);
+          color: #C85A2A;
+        }
+        .t3-optionText{
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          font-size: 12.5px;
+          line-height: 1.25;
+          color: #C85A2A;
+          text-align: left;
+        }
+        @media (max-width: 760px){
+          .t3-part2Wrap{
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
+
       <div className={styles.overlay}>
-        {/* TOP BAR (identical styling via Task1 CSS) */}
+        {/* TOP BAR */}
         <div className={styles.topBar}>
           <div className={styles.topLeft}>{topMessage}</div>
 
@@ -329,40 +519,66 @@ export default function World1Task3Screen() {
           </div>
         </div>
 
-        {/* STATEMENT CARD */}
+        {/* MAIN CARD */}
         <div ref={statementCardRef} className={styles.statementCard}>
-          {/* ✅ no WHY button in Task3 */}
-          <div className={styles.statementText}>{current?.text || "…"}</div>
-        </div>
+          {/* ✅ NEMA “CASE 1 OF 4” / “CHOOSE THE RIGHT PATH” crnog teksta */}
 
-        {/* ANSWER BUTTONS (correct / not sure / wrong) */}
-        <div className={styles.answerRow}>
-          <button
-            type="button"
-            className={styles.answerBtn}
-            onClick={() => handleAnswer("correct")}
-            aria-label="Yes"
-          >
-            <img src={BTN_CORRECT} alt="Yes" />
-          </button>
+          {/* statement */}
+          <div className={styles.statementText} style={{ marginTop: 4, textAlign: "center" }}>
+            {current?.statement || "…"}
+          </div>
 
-          <button
-            type="button"
-            className={styles.answerBtn}
-            onClick={() => handleAnswer("middle")}
-            aria-label="Not sure"
-          >
-            <img src={BTN_MIDDLE} alt="Not sure" />
-          </button>
+          {/* PART 1 */}
+          {phase === "part1" && (
+            <div style={{ marginTop: 14 }}>
+              <div className={styles.answerRow} style={{ marginTop: 0 }}>
+                <button
+                  type="button"
+                  className={styles.answerBtn}
+                  onClick={() => handlePart1("correct")}
+                  aria-label="Yes"
+                >
+                  <img src={BTN_CORRECT} alt="Yes" />
+                </button>
 
-          <button
-            type="button"
-            className={styles.answerBtn}
-            onClick={() => handleAnswer("wrong")}
-            aria-label="No"
-          >
-            <img src={BTN_WRONG} alt="No" />
-          </button>
+                <button
+                  type="button"
+                  className={styles.answerBtn}
+                  onClick={() => handlePart1("middle")}
+                  aria-label="Not sure"
+                >
+                  <img src={BTN_MIDDLE} alt="Not sure" />
+                </button>
+
+                <button
+                  type="button"
+                  className={styles.answerBtn}
+                  onClick={() => handlePart1("wrong")}
+                  aria-label="No"
+                >
+                  <img src={BTN_WRONG} alt="No" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* PART 2 (✅ ispod teksta) */}
+          {phase === "part2" && (
+            <div className="t3-part2Wrap" aria-label="Choose the right path">
+              {current?.options?.map((opt) => (
+                <button
+                  key={opt.key}
+                  type="button"
+                  className="t3-optionBtn"
+                  onClick={() => handlePart2(opt.key)}
+                  aria-label={`Option ${opt.key}`}
+                >
+                  <div className="t3-optionLetter">{opt.key}</div>
+                  <div className="t3-optionText">{opt.text}</div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* REWARD OVERLAY */}
@@ -394,7 +610,7 @@ export default function World1Task3Screen() {
           </div>
         ))}
 
-        {/* WRONG POPUP */}
+        {/* POPUP */}
         {popupOpen && (
           <div className={styles.popupBackdrop} onMouseDown={closePopup} role="presentation">
             <div
@@ -406,13 +622,12 @@ export default function World1Task3Screen() {
               <button type="button" className={styles.popupClose} onClick={closePopup} aria-label="Close">
                 ×
               </button>
-
               <div className={styles.popupText}>{popupText}</div>
             </div>
           </div>
         )}
 
-        {/* END POPUP (Task1 style, updated for Task3) */}
+        {/* END POPUP */}
         {endOpen && (
           <div className={styles.endBackdrop} role="presentation">
             <div className={styles.endCard} role="dialog" aria-modal="true">
