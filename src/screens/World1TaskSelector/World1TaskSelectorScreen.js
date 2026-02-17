@@ -312,25 +312,26 @@ export default function World1TaskSelectorScreen() {
             </button>
           </div>
 
-          {/* TASK 4 (neutral #) */}
-          <div className={styles.taskItem}>
-            <a
-              href="#"
-              className={styles.taskIconWrap}
-              onClick={handleTask4}
-              aria-label="Task 4"
-            >
-              <img src={task4Img} alt="Task 4" className={styles.taskIcon} />
-            </a>
+{/* TASK 4 (disabled / coming soon) */}
+<div className={styles.taskItem}>
+  <button
+    type="button"
+    className={[styles.taskIconWrap, styles.taskIconDisabled].join(" ")}
+    disabled
+    aria-label="Task 4 locked"
+  >
+    <img src={task4Img} alt="Task 4" className={styles.taskIcon} />
+  </button>
 
-            <a
-              href="#"
-              className={[styles.taskBtn, styles.taskBtnEnabled].join(" ")}
-              onClick={handleTask4}
-            >
-              START TASK 4
-            </a>
-          </div>
+  <button
+    type="button"
+    className={[styles.taskBtn, styles.taskBtnDisabled].join(" ")}
+    disabled
+  >
+    START TASK 4
+  </button>
+</div>
+
         </div>
 
         {/* Character */}

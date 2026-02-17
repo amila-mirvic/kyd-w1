@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./World1Task1Screen.module.css";
 
@@ -17,7 +17,6 @@ const BADGE_ADVANCED = asset("/world1/task1/advanced.png");
 const BADGE_EXPERT = asset("/world1/task1/expert.png");
 const BADGE_CURIOSITY = asset("/world1/task1/curiosity.png");
 
-// 🔁 prilagodi ako su ti rute drugačije
 const MAIN_MENU_ROUTE = "/world1";
 const TASK_SELECTOR_ROUTE = "/world1/tasks";
 
@@ -79,12 +78,10 @@ export default function World1Task1Screen() {
     });
   };
 
-  // ✅ SCORE
   const [points, setPoints] = useState(0);
   const [curiosityPoints, setCuriosityPoints] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
 
-  // ✅ Fly-to-UI animation
   const pointsTargetRef = useRef(null);
   const curiosityTargetRef = useRef(null);
   const cardRef = useRef(null);
@@ -126,7 +123,6 @@ export default function World1Task1Screen() {
     }, 820);
   };
 
-  // ✅ reward overlay
   const [rewardOpen, setRewardOpen] = useState(false);
   const [rewardLabel, setRewardLabel] = useState("CORRECT");
   const rewardTimerRef = useRef(null);
@@ -144,7 +140,6 @@ export default function World1Task1Screen() {
     };
   }, []);
 
-  // ✅ WHY popup
   const [whyOpen, setWhyOpen] = useState(false);
   const [whyText, setWhyText] = useState("");
   const whyUsesRef = useRef(0);
@@ -155,22 +150,24 @@ export default function World1Task1Screen() {
   };
   const closeWhy = () => setWhyOpen(false);
 
-  // ✅ end popup
   const [endOpen, setEndOpen] = useState(false);
   const endLockRef = useRef(false);
 
-  const resolveSkillBadge = (correct) => {
+  const resolveSkillBadge = useCallback((correct) => {
     if (correct <= 1) return { id: "beginner", src: BADGE_BEGINNER };
     if (correct <= 3) return { id: "advanced", src: BADGE_ADVANCED };
     return { id: "expert", src: BADGE_EXPERT };
-  };
+  }, []);
 
-  const buildEarnedBadges = (correct, curiosity) => {
-    const earned = [];
-    earned.push(resolveSkillBadge(correct));
-    if (curiosity >= 5) earned.push({ id: "curiosity", src: BADGE_CURIOSITY });
-    return earned;
-  };
+  const buildEarnedBadges = useCallback(
+    (correct, curiosity) => {
+      const earned = [];
+      earned.push(resolveSkillBadge(correct));
+      if (curiosity >= 5) earned.push({ id: "curiosity", src: BADGE_CURIOSITY });
+      return earned;
+    },
+    [resolveSkillBadge]
+  );
 
   const safeRead = (key) => {
     try {
@@ -235,10 +232,8 @@ export default function World1Task1Screen() {
   const goMainMenu = () => navigate(MAIN_MENU_ROUTE, { state: player });
   const goTaskSelector = () => navigate(TASK_SELECTOR_ROUTE, { state: player });
 
-  // ✅ quiz progress
   const [index, setIndex] = useState(0);
   const current = QUESTIONS[index];
-
   const answerLockRef = useRef(false);
 
   const goNext = () => {
@@ -287,7 +282,6 @@ export default function World1Task1Screen() {
   const handleWhy = () => {
     if (!current?.whyText || endOpen) return;
 
-    // ✅ curiosity points only first 3 uses per task run
     const nextUses = whyUsesRef.current + 1;
     whyUsesRef.current = nextUses;
 
@@ -299,7 +293,6 @@ export default function World1Task1Screen() {
     openWhy(current.whyText);
   };
 
-  // close popups on ESC
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "Escape" && whyOpen) closeWhy();
@@ -312,13 +305,12 @@ export default function World1Task1Screen() {
 
   const earnedBadges = useMemo(
     () => buildEarnedBadges(correctCount, curiosityPoints),
-    [correctCount, curiosityPoints]
+    [buildEarnedBadges, correctCount, curiosityPoints]
   );
 
   return (
     <div className={styles.screen} style={bgStyle}>
       <div className={styles.overlay}>
-        {/* TOP BAR */}
         <div className={styles.topBar}>
           <div className={styles.topLeft}>{topMessage}</div>
 
@@ -340,7 +332,6 @@ export default function World1Task1Screen() {
           </div>
         </div>
 
-        {/* CARD */}
         <div ref={cardRef} className={styles.statementCard}>
           <button type="button" className={styles.whyBtn} onClick={handleWhy} aria-label="Why">
             <img src={ICON_WHY} alt="" />
@@ -349,18 +340,12 @@ export default function World1Task1Screen() {
           <div className={styles.statementText}>{current?.text || "…"}</div>
         </div>
 
-        {/* ANSWERS */}
         <div className={styles.answerRow}>
           <button type="button" className={styles.answerBtn} onClick={() => handleAnswer("yes")} aria-label="Yes">
             <img src={BTN_YES} alt="Yes" />
           </button>
 
-          <button
-            type="button"
-            className={styles.answerBtn}
-            onClick={() => handleAnswer("notSure")}
-            aria-label="Not sure"
-          >
+          <button type="button" className={styles.answerBtn} onClick={() => handleAnswer("notSure")} aria-label="Not sure">
             <img src={BTN_NOT_SURE} alt="Not sure" />
           </button>
 
@@ -369,7 +354,6 @@ export default function World1Task1Screen() {
           </button>
         </div>
 
-        {/* REWARD OVERLAY */}
         {rewardOpen && (
           <div className={styles.rewardOverlay} aria-hidden="true">
             <div className={styles.rewardCard}>
@@ -378,7 +362,6 @@ export default function World1Task1Screen() {
           </div>
         )}
 
-        {/* FLY ITEMS */}
         {flyItems.map((it) => (
           <div
             key={it.id}
@@ -398,7 +381,6 @@ export default function World1Task1Screen() {
           </div>
         ))}
 
-        {/* WHY POPUP */}
         {whyOpen && (
           <div className={styles.popupBackdrop} onMouseDown={closeWhy} role="presentation">
             <div
@@ -415,7 +397,6 @@ export default function World1Task1Screen() {
           </div>
         )}
 
-        {/* END POPUP */}
         {endOpen && (
           <div className={styles.endBackdrop} role="presentation">
             <div className={styles.endCard} role="dialog" aria-modal="true">
