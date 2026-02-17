@@ -109,7 +109,9 @@ export default function World1Task2Screen() {
 
   // ✅ SCORE
   const [points, setPoints] = useState(0);
-  const [curiosityPoints, setCuriosityPoints] = useState(0);
+  // Task2 currently doesn't award curiosity points, but the UI displays the value.
+  // Keep the state value without the setter to avoid CI lint errors.
+  const [curiosityPoints] = useState(0);
 
   // ✅ Fly-to-UI animation (COPIED pattern from Task1)
   const pointsTargetRef = useRef(null);

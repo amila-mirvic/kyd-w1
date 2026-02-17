@@ -62,9 +62,8 @@ export default function World1TaskSelectorScreen() {
     navigate("/world-1/task-3", { state: player });
   }, [navigate, player]);
 
-  // Task 4: neutral link (#) – no navigation
-  const handleTask4 = useCallback((e) => {
-    e.preventDefault();
+  // Task 4: neutral (no navigation)
+  const handleTask4 = useCallback(() => {
     // optional: could show toast later, but keep it neutral for now
   }, []);
 
@@ -314,22 +313,22 @@ export default function World1TaskSelectorScreen() {
 
           {/* TASK 4 (neutral #) */}
           <div className={styles.taskItem}>
-            <a
-              href="#"
+            <button
+              type="button"
               className={styles.taskIconWrap}
               onClick={handleTask4}
               aria-label="Task 4"
             >
               <img src={task4Img} alt="Task 4" className={styles.taskIcon} />
-            </a>
+            </button>
 
-            <a
-              href="#"
+            <button
+              type="button"
               className={[styles.taskBtn, styles.taskBtnEnabled].join(" ")}
               onClick={handleTask4}
             >
               START TASK 4
-            </a>
+            </button>
           </div>
         </div>
 

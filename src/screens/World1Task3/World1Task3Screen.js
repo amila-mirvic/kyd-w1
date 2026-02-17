@@ -439,10 +439,8 @@ export default function World1Task3Screen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [popupOpen, endOpen]);
 
-  const earnedBadges = useMemo(() => {
-    const correctTotal = correctCountPart1 + correctCountPart2;
-    return buildEarnedBadges(correctTotal, curiosityPoints);
-  }, [correctCountPart1, correctCountPart2, curiosityPoints]);
+  const correctTotal = correctCountPart1 + correctCountPart2;
+  const earnedBadges = buildEarnedBadges(correctTotal, curiosityPoints);
 
   return (
     <div className={styles.screen} style={bgStyle}>
@@ -598,8 +596,8 @@ export default function World1Task3Screen() {
             style={{
               left: it.fromX,
               top: it.fromY,
-              ["--toX"]: `${it.toX}px`,
-              ["--toY"]: `${it.toY}px`,
+              "--toX": `${it.toX}px`,
+              "--toY": `${it.toY}px`,
             }}
             aria-hidden="true"
           >
