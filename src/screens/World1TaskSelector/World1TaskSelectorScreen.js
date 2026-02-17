@@ -393,56 +393,46 @@ export default function World1TaskSelectorScreen() {
               START TASK 1
             </button>
           </div>
+{/* TASK 2 (enabled) */}
+<div className={styles.taskItem}>
+  <button
+    type="button"
+    className={styles.taskIconWrap}
+    onClick={handleTask2}
+    aria-label="Task 2"
+  >
+    <img src={task2Img} alt="Task 2" className={styles.taskIcon} />
+  </button>
 
-          {/* TASK 2 (locked until Task 1 done) */}
-          <div className={styles.taskItem}>
-            <button
-              type="button"
-              className={[styles.taskIconWrap, !hasTask1 ? styles.taskIconDisabled : ""].join(" ")}
-              onClick={hasTask1 ? handleTask2 : undefined}
-              disabled={!hasTask1}
-              aria-label={!hasTask1 ? "Task 2 locked" : "Task 2"}
-            >
-              <img src={task2Img} alt="Task 2" className={styles.taskIcon} />
-            </button>
+  <button
+    type="button"
+    className={[styles.taskBtn, styles.taskBtnEnabled].join(" ")}
+    onClick={handleTask2}
+  >
+    START TASK 2
+  </button>
+</div>
 
-            <button
-              type="button"
-              className={[
-                styles.taskBtn,
-                hasTask1 ? styles.taskBtnEnabled : styles.taskBtnDisabled,
-              ].join(" ")}
-              onClick={hasTask1 ? handleTask2 : undefined}
-              disabled={!hasTask1}
-            >
-              START TASK 2
-            </button>
-          </div>
+{/* TASK 3 (enabled) */}
+<div className={styles.taskItem}>
+  <button
+    type="button"
+    className={styles.taskIconWrap}
+    onClick={handleTask3}
+    aria-label="Task 3"
+  >
+    <img src={task3Img} alt="Task 3" className={styles.taskIcon} />
+  </button>
 
-          {/* TASK 3 (locked until Task 2 done) */}
-          <div className={styles.taskItem}>
-            <button
-              type="button"
-              className={[styles.taskIconWrap, !hasTask2 ? styles.taskIconDisabled : ""].join(" ")}
-              onClick={hasTask2 ? handleTask3 : undefined}
-              disabled={!hasTask2}
-              aria-label={!hasTask2 ? "Task 3 locked" : "Task 3"}
-            >
-              <img src={task3Img} alt="Task 3" className={styles.taskIcon} />
-            </button>
+  <button
+    type="button"
+    className={[styles.taskBtn, styles.taskBtnEnabled].join(" ")}
+    onClick={handleTask3}
+  >
+    START TASK 3
+  </button>
+</div>
 
-            <button
-              type="button"
-              className={[
-                styles.taskBtn,
-                hasTask2 ? styles.taskBtnEnabled : styles.taskBtnDisabled,
-              ].join(" ")}
-              onClick={hasTask2 ? handleTask3 : undefined}
-              disabled={!hasTask2}
-            >
-              START TASK 3
-            </button>
-          </div>
 
           {/* TASK 4 (disabled for now) */}
           <div className={styles.taskItem}>
