@@ -49,27 +49,7 @@ export default function World1TaskSelectorScreen() {
   };
 
   /* ------------------------------------ */
-  /* ✅ TASK HANDLERS (NO LOCKING) */
-  const handleTask1 = useCallback(() => {
-    navigate("/world-1/task-1", { state: player });
-  }, [navigate, player]);
-
-  const handleTask2 = useCallback(() => {
-    navigate("/world-1/task-2", { state: player });
-  }, [navigate, player]);
-
-  const handleTask3 = useCallback(() => {
-    navigate("/world-1/task-3", { state: player });
-  }, [navigate, player]);
-
-  // Task 4: neutral link (#) – no navigation
-  const handleTask4 = useCallback((e) => {
-    e.preventDefault();
-    // optional: could show toast later, but keep it neutral for now
-  }, []);
-
-  /* ------------------------------------ */
-  /* ACHIEVEMENTS DATA (sum across tasks) */
+  /* ✅ totals + badges */
   const dedupeBadges = (arr) => {
     const seen = new Set();
     const out = [];
@@ -114,7 +94,8 @@ export default function World1TaskSelectorScreen() {
         Object.values(tasks).forEach((t) => {
           if (!t) return;
           if (typeof t.points === "number") totalPoints += t.points;
-          if (typeof t.curiosityPoints === "number") totalCuriosityPoints += t.curiosityPoints;
+          if (typeof t.curiosityPoints === "number")
+            totalCuriosityPoints += t.curiosityPoints;
           if (Array.isArray(t.badges)) badges.push(...t.badges);
         });
       });
@@ -127,7 +108,8 @@ export default function World1TaskSelectorScreen() {
     if (Array.isArray(results)) {
       results.forEach((t) => {
         if (typeof t?.points === "number") totalPoints += t.points;
-        if (typeof t?.curiosityPoints === "number") totalCuriosityPoints += t.curiosityPoints;
+        if (typeof t?.curiosityPoints === "number")
+          totalCuriosityPoints += t.curiosityPoints;
         if (Array.isArray(t?.badges)) badges.push(...t.badges);
       });
 
@@ -151,12 +133,21 @@ export default function World1TaskSelectorScreen() {
     return { totalPoints, totalCuriosityPoints, badges };
   };
 
+  const [progressTick, setProgressTick] = useState(0);
+  useEffect(() => {
+    const bump = () => setProgressTick((v) => v + 1);
+    const onFocus = () => bump();
+
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, []);
+
   const [achOpen, setAchOpen] = useState(false);
 
   const { totalPoints, totalCuriosityPoints, badges } = useMemo(() => {
     return computeTotalsAndBadges();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [achOpen]);
+  }, [achOpen, progressTick]);
 
   const resolveBadgeSrc = (b) => {
     if (typeof b === "string") {
@@ -201,6 +192,20 @@ export default function World1TaskSelectorScreen() {
       document.removeEventListener("mousedown", onDocMouseDown);
     };
   }, [achOpen]);
+
+  /* ------------------------------------ */
+  /* ✅ TASK HANDLERS (ALL ENABLED, NO LOCKING) */
+  const handleTask1 = useCallback(() => {
+    navigate("/world-1/task-1", { state: player });
+  }, [navigate, player]);
+
+  const handleTask2 = useCallback(() => {
+    navigate("/world-1/task-2", { state: player });
+  }, [navigate, player]);
+
+  const handleTask3 = useCallback(() => {
+    navigate("/world-1/task-3", { state: player });
+  }, [navigate, player]);
 
   return (
     <div className={styles.screen} style={bgStyle}>
@@ -312,26 +317,25 @@ export default function World1TaskSelectorScreen() {
             </button>
           </div>
 
-{/* TASK 4 (disabled / coming soon) */}
-<div className={styles.taskItem}>
-  <button
-    type="button"
-    className={[styles.taskIconWrap, styles.taskIconDisabled].join(" ")}
-    disabled
-    aria-label="Task 4 locked"
-  >
-    <img src={task4Img} alt="Task 4" className={styles.taskIcon} />
-  </button>
+          {/* TASK 4 (neutral / not implemented) */}
+          <div className={styles.taskItem}>
+            <button
+              type="button"
+              className={[styles.taskIconWrap, styles.taskIconDisabled].join(" ")}
+              disabled
+              aria-label="Task 4 (coming soon)"
+            >
+              <img src={task4Img} alt="Task 4" className={styles.taskIcon} />
+            </button>
 
-  <button
-    type="button"
-    className={[styles.taskBtn, styles.taskBtnDisabled].join(" ")}
-    disabled
-  >
-    START TASK 4
-  </button>
-</div>
-
+            <button
+              type="button"
+              className={[styles.taskBtn, styles.taskBtnDisabled].join(" ")}
+              disabled
+            >
+              START TASK 4
+            </button>
+          </div>
         </div>
 
         {/* Character */}

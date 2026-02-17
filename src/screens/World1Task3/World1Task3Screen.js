@@ -34,7 +34,7 @@ const CASES = [
   {
     id: 1,
     statement:
-      "A JOURNALIST PUBLISHES AN INVESTIGATION ABOUT MISUSE OF PUBLIC MONEY. THE GOVERNMENT LABELS IT \"HARMFUL\" AND SHUTS THE OUTLET DOWN.",
+      'A JOURNALIST PUBLISHES AN INVESTIGATION ABOUT MISUSE OF PUBLIC MONEY. THE GOVERNMENT LABELS IT "HARMFUL" AND SHUTS THE OUTLET DOWN.',
     // Part 1: choose YES / NOT_SURE / NO (use your correct mapping)
     part1Correct: "NO",
     part1Why:
@@ -56,7 +56,7 @@ const CASES = [
   {
     id: 2,
     statement:
-      "THE GOVERNMENT PASSES A LAW ALLOWING IT TO BAN PROTESTS FOR \"PUBLIC ORDER\" WITHOUT CLEAR LIMITS OR OVERSIGHT.",
+      'THE GOVERNMENT PASSES A LAW ALLOWING IT TO BAN PROTESTS FOR "PUBLIC ORDER" WITHOUT CLEAR LIMITS OR OVERSIGHT.',
     part1Correct: "NO",
     part1Why:
       "BROAD POWERS WITHOUT CLEAR LIMITS CAN BE USED TO SILENCE DISSENT. PROTEST RIGHTS REQUIRE OVERSIGHT AND PROPORTIONATE RULES.",
@@ -246,6 +246,11 @@ export default function World1Task3Screen() {
     if (!current || modalOpen || endOpen) return;
     pickTopMessage();
 
+    // ✅ Curiosity: choosing "NOT SURE" gives +1 curiosity point (and fixes unused setter lint)
+    if (choice === "NOT_SURE") {
+      setCuriosityPoints((c) => c + 1);
+    }
+
     const isCorrect = choice === current.part1Correct;
     if (isCorrect) {
       showCorrect();
@@ -287,10 +292,10 @@ export default function World1Task3Screen() {
     return () => window.removeEventListener("keydown", onKey);
   }, [modalOpen]);
 
-  const earnedBadges = useMemo(() => buildEarnedBadges(correctCount, curiosityPoints), [
-    correctCount,
-    curiosityPoints,
-  ]);
+  const earnedBadges = useMemo(
+    () => buildEarnedBadges(correctCount, curiosityPoints),
+    [correctCount, curiosityPoints, buildEarnedBadges]
+  );
 
   const goMainMenu = () => navigate(MAIN_MENU_ROUTE, { state: player });
   const goTaskSelector = () => navigate(TASK_SELECTOR_ROUTE, { state: player });
