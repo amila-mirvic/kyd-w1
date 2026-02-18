@@ -6,7 +6,6 @@ export default function World1TaskSelectorScreen() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // ✅ get player from router state OR localStorage fallback
   const player = useMemo(() => {
     const fromState = location.state && location.state.name ? location.state : null;
     if (fromState) return fromState;
@@ -19,26 +18,20 @@ export default function World1TaskSelectorScreen() {
     }
   }, [location.state]);
 
-  // ✅ background
   const bgUrl = `${process.env.PUBLIC_URL}/worlds/world1.png`;
   const bgStyle = useMemo(() => ({ "--bg": `url(${bgUrl})` }), [bgUrl]);
 
-  // ✅ character
   const femaleSrc = `${process.env.PUBLIC_URL}/characters/female.png`;
   const maleSrc = `${process.env.PUBLIC_URL}/characters/male.png`;
   const characterSrc = player.character === "male" ? maleSrc : femaleSrc;
 
-  // ✅ task images in public/world1
   const task1Img = `${process.env.PUBLIC_URL}/world1/task1.png`;
   const task2Img = `${process.env.PUBLIC_URL}/world1/task2.png`;
   const task3Img = `${process.env.PUBLIC_URL}/world1/task3.png`;
   const task4Img = `${process.env.PUBLIC_URL}/world1/task4.png`;
 
-  // ✅ achievements icon (FIGMA): public/ui/medal.svg
   const achievementIcon = `${process.env.PUBLIC_URL}/ui/medal.svg`;
 
-  /* ------------------------------------ */
-  /* ✅ SAFE STORAGE HELPERS */
   const safeParse = (key) => {
     try {
       const raw = localStorage.getItem(key);
@@ -48,28 +41,32 @@ export default function World1TaskSelectorScreen() {
     }
   };
 
-  /* ------------------------------------ */
-  /* ✅ totals + badges */
-  const dedupeBadges = (arr) => {
-    const seen = new Set();
-    const out = [];
+  const [progressTick, setProgressTick] = useState(0);
 
-    for (const b of arr || []) {
-      const key =
-        typeof b === "string"
-          ? b
-          : b?.id
-          ? String(b.id)
-          : b?.src
-          ? String(b.src)
-          : JSON.stringify(b);
+  useEffect(() => {
+    const bump = () => setProgressTick((v) => v + 1);
 
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push(b);
-    }
-    return out;
-  };
+    const onFocus = () => bump();
+
+    const onStorage = (e) => {
+      if (!e?.key) return;
+      if (
+        e.key.includes("yd_world1_task") ||
+        e.key.includes("yd_scores") ||
+        e.key.includes("yd_progress") ||
+        e.key.includes("yd_task_results")
+      ) {
+        bump();
+      }
+    };
+
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, []);
 
   const computeTotalsAndBadges = () => {
     let totalPoints = 0;
@@ -88,7 +85,6 @@ export default function World1TaskSelectorScreen() {
     const progress = safeParse("yd_progress");
     if (progress?.worlds) {
       const worlds = progress.worlds;
-
       Object.values(worlds).forEach((w) => {
         const tasks = w?.tasks || w?.taskResults || {};
         Object.values(tasks).forEach((t) => {
@@ -99,8 +95,6 @@ export default function World1TaskSelectorScreen() {
           if (Array.isArray(t.badges)) badges.push(...t.badges);
         });
       });
-
-      badges = dedupeBadges(badges);
       return { totalPoints, totalCuriosityPoints, badges };
     }
 
@@ -112,35 +106,11 @@ export default function World1TaskSelectorScreen() {
           totalCuriosityPoints += t.curiosityPoints;
         if (Array.isArray(t?.badges)) badges.push(...t.badges);
       });
-
-      badges = dedupeBadges(badges);
       return { totalPoints, totalCuriosityPoints, badges };
     }
 
-    // fallback per-task keys
-    const t1 = safeParse("yd_world1_task1");
-    const t2 = safeParse("yd_world1_task2");
-    const t3 = safeParse("yd_world1_task3");
-
-    [t1, t2, t3].forEach((t) => {
-      if (!t) return;
-      if (typeof t.points === "number") totalPoints += t.points;
-      if (typeof t.curiosityPoints === "number") totalCuriosityPoints += t.curiosityPoints;
-      if (Array.isArray(t.badges)) badges.push(...t.badges);
-    });
-
-    badges = dedupeBadges(badges);
     return { totalPoints, totalCuriosityPoints, badges };
   };
-
-  const [progressTick, setProgressTick] = useState(0);
-  useEffect(() => {
-    const bump = () => setProgressTick((v) => v + 1);
-    const onFocus = () => bump();
-
-    window.addEventListener("focus", onFocus);
-    return () => window.removeEventListener("focus", onFocus);
-  }, []);
 
   const [achOpen, setAchOpen] = useState(false);
 
@@ -162,8 +132,6 @@ export default function World1TaskSelectorScreen() {
     return `${process.env.PUBLIC_URL}/badges/badge-placeholder.png`;
   };
 
-  /* ------------------------------------ */
-  /* CLOSE BEHAVIOUR: click outside + ESC */
   const achBtnRef = useRef(null);
   const achPanelRef = useRef(null);
 
@@ -193,24 +161,16 @@ export default function World1TaskSelectorScreen() {
     };
   }, [achOpen]);
 
-  /* ------------------------------------ */
-  /* ✅ TASK HANDLERS (ALL ENABLED, NO LOCKING) */
-  const handleTask1 = useCallback(() => {
-    navigate("/world-1/task-1", { state: player });
-  }, [navigate, player]);
+  const handleTask1 = useCallback(() => navigate("/world-1/task-1", { state: player }), [navigate, player]);
+  const handleTask2 = useCallback(() => navigate("/world-1/task-2", { state: player }), [navigate, player]);
+  const handleTask3 = useCallback(() => navigate("/world-1/task-3", { state: player }), [navigate, player]);
 
-  const handleTask2 = useCallback(() => {
-    navigate("/world-1/task-2", { state: player });
-  }, [navigate, player]);
-
-  const handleTask3 = useCallback(() => {
-    navigate("/world-1/task-3", { state: player });
-  }, [navigate, player]);
+  // Task 4 neutral (no href, no navigation)
+  const handleTask4 = useCallback(() => {}, []);
 
   return (
     <div className={styles.screen} style={bgStyle}>
       <div className={styles.overlay}>
-        {/* ✅ TOP RIGHT: achievements icon button */}
         <button
           ref={achBtnRef}
           type="button"
@@ -222,7 +182,6 @@ export default function World1TaskSelectorScreen() {
           <img src={achievementIcon} alt="" className={styles.achIcon} />
         </button>
 
-        {/* ✅ POPOVER PANEL */}
         {achOpen && (
           <div ref={achPanelRef} className={styles.achPanel} role="dialog" aria-modal="false">
             <div className={styles.achRow}>
@@ -255,16 +214,9 @@ export default function World1TaskSelectorScreen() {
           </div>
         )}
 
-        {/* LEFT rail */}
         <div className={styles.taskRail}>
-          {/* TASK 1 */}
           <div className={styles.taskItem}>
-            <button
-              type="button"
-              className={styles.taskIconWrap}
-              onClick={handleTask1}
-              aria-label="Task 1"
-            >
+            <button type="button" className={styles.taskIconWrap} onClick={handleTask1} aria-label="Task 1">
               <img src={task1Img} alt="Task 1" className={styles.taskIcon} />
             </button>
 
@@ -277,14 +229,8 @@ export default function World1TaskSelectorScreen() {
             </button>
           </div>
 
-          {/* TASK 2 */}
           <div className={styles.taskItem}>
-            <button
-              type="button"
-              className={styles.taskIconWrap}
-              onClick={handleTask2}
-              aria-label="Task 2"
-            >
+            <button type="button" className={styles.taskIconWrap} onClick={handleTask2} aria-label="Task 2">
               <img src={task2Img} alt="Task 2" className={styles.taskIcon} />
             </button>
 
@@ -297,14 +243,8 @@ export default function World1TaskSelectorScreen() {
             </button>
           </div>
 
-          {/* TASK 3 */}
           <div className={styles.taskItem}>
-            <button
-              type="button"
-              className={styles.taskIconWrap}
-              onClick={handleTask3}
-              aria-label="Task 3"
-            >
+            <button type="button" className={styles.taskIconWrap} onClick={handleTask3} aria-label="Task 3">
               <img src={task3Img} alt="Task 3" className={styles.taskIcon} />
             </button>
 
@@ -317,13 +257,12 @@ export default function World1TaskSelectorScreen() {
             </button>
           </div>
 
-          {/* TASK 4 (neutral / not implemented) */}
           <div className={styles.taskItem}>
             <button
               type="button"
               className={[styles.taskIconWrap, styles.taskIconDisabled].join(" ")}
-              disabled
-              aria-label="Task 4 (coming soon)"
+              onClick={handleTask4}
+              aria-label="Task 4"
             >
               <img src={task4Img} alt="Task 4" className={styles.taskIcon} />
             </button>
@@ -331,14 +270,13 @@ export default function World1TaskSelectorScreen() {
             <button
               type="button"
               className={[styles.taskBtn, styles.taskBtnDisabled].join(" ")}
-              disabled
+              onClick={handleTask4}
             >
               START TASK 4
             </button>
           </div>
         </div>
 
-        {/* Character */}
         <div className={styles.characterWrap} aria-hidden="true">
           <img src={characterSrc} alt="" className={styles.characterImg} />
         </div>

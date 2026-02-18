@@ -259,7 +259,6 @@ export default function World1Task3Screen() {
       window.setTimeout(() => setPoints((p) => p + 2), 520);
       window.setTimeout(() => setPhase("B"), 560);
     } else {
-      // show explanation (Figma popup style)
       openModal(current.part1Why || "NOT QUITE. THINK AGAIN.");
     }
   };
@@ -292,10 +291,8 @@ export default function World1Task3Screen() {
     return () => window.removeEventListener("keydown", onKey);
   }, [modalOpen]);
 
-  const earnedBadges = useMemo(
-    () => buildEarnedBadges(correctCount, curiosityPoints),
-    [correctCount, curiosityPoints, buildEarnedBadges]
-  );
+  // ✅ No useMemo -> no CI ESLint warning about buildEarnedBadges changing deps
+  const earnedBadges = buildEarnedBadges(correctCount, curiosityPoints);
 
   const goMainMenu = () => navigate(MAIN_MENU_ROUTE, { state: player });
   const goTaskSelector = () => navigate(TASK_SELECTOR_ROUTE, { state: player });
