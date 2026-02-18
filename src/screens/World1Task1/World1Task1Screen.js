@@ -7,63 +7,53 @@ const TASK_SELECTOR_ROUTE = "/world1/tasks";
 
 const asset = (p) => `${process.env.PUBLIC_URL}${p}`;
 
-/* Background (public/world1/task1/) */
+// ✅ Assets
 const BG = asset("/world1/task1/bg.png");
 
-/* Top right icons (public/world1/task1/) */
-const ICON_POINTS = asset("/world1/task1/points.png");
-const ICON_CURIOSITY_POINTS = asset("/world1/task1/curiositypoints.png");
+const ICON_POINTS = asset("/ui/points.png");
+const ICON_CURIOSITY = asset("/ui/curiositypoints.png");
 
-/* Answer buttons (public/world1/task1/) */
-const BTN_YES = asset("/world1/task1/correct.png");
-const BTN_NOT_SURE = asset("/world1/task1/middle.png");
-const BTN_NO = asset("/world1/task1/wrong.png");
+const BTN_CORRECT = asset("/world1/task1/correct.png"); // green
+const BTN_MIDDLE = asset("/world1/task1/middle.png"); // yellow
+const BTN_WRONG = asset("/world1/task1/wrong.png"); // red
 
-/* Badges (public/badges/) */
 const BADGE_BEGINNER = asset("/badges/beginner.png");
 const BADGE_ADVANCED = asset("/badges/advanced.png");
 const BADGE_EXPERT = asset("/badges/expert.png");
 const BADGE_CURIOSITY = asset("/badges/curiosity.png");
 
-/* ✅ pure helper (outside component) so hooks don't complain about changing dependencies */
-const resolveSkillBadge = (correct) => {
-  if (correct <= 1) return { id: "beginner", src: BADGE_BEGINNER };
-  if (correct <= 3) return { id: "advanced", src: BADGE_ADVANCED };
-  return { id: "expert", src: BADGE_EXPERT };
-};
-
 const CASES = [
   {
     id: 1,
     statement:
-      "A POLITICIAN SAYS THAT ONLY CERTAIN PEOPLE DESERVE TO VOTE BECAUSE OTHERS ARE “NOT EDUCATED ENOUGH.”",
-    correct: "NO",
-    why:
-      "IN DEMOCRACY, EVERY ADULT CITIZEN SHOULD HAVE THE RIGHT TO VOTE. LIMITING VOTING BASED ON EDUCATION IS UNFAIR AND UNDEMOCRATIC.",
+      "A JOURNALIST PUBLISHES AN INVESTIGATION ABOUT MISUSE OF PUBLIC MONEY. THE GOVERNMENT LABELS IT “HARMFUL” AND SHUTS THE OUTLET DOWN.",
+    correct: "wrong",
+    whyCorrect:
+      "SHUTTING DOWN INDEPENDENT MEDIA IS A MAJOR RIGHTS AND ACCOUNTABILITY PROBLEM. IN DEMOCRACY, CRITICISM AND INVESTIGATION MUST BE PROTECTED.",
   },
   {
     id: 2,
     statement:
-      "A GOVERNMENT REPORT REVEALS CORRUPTION, BUT THE AUTHORITIES REFUSE TO INVESTIGATE AND HIDE THE DOCUMENT.",
-    correct: "NO",
-    why:
-      "DEMOCRACY REQUIRES TRANSPARENCY AND ACCOUNTABILITY. HIDING CORRUPTION UNDERMINES TRUST AND RULE OF LAW.",
+      "THE GOVERNMENT PASSES A LAW ALLOWING IT TO BAN PROTESTS FOR “PUBLIC ORDER” WITHOUT CLEAR LIMITS OR OVERSIGHT.",
+    correct: "wrong",
+    whyCorrect:
+      "BROAD POWERS WITHOUT CLEAR LIMITS CAN BE USED TO SILENCE DISSENT. PROTEST RIGHTS REQUIRE OVERSIGHT AND PROPORTIONATE RULES.",
   },
   {
     id: 3,
     statement:
-      "AN OPPOSITION PARTY IS NOT ALLOWED TO CAMPAIGN IN PUBLIC SPACES, WHILE THE RULING PARTY CAN.",
-    correct: "NO",
-    why:
-      "FAIR ELECTIONS REQUIRE EQUAL OPPORTUNITY FOR ALL PARTIES. BANNING ONLY THE OPPOSITION IS NOT DEMOCRATIC.",
+      "A NEW RULE REQUIRES ALL NGOS RECEIVING FOREIGN DONATIONS TO REGISTER AND PUBLISH DONORS, WITH VAGUE PENALTIES.",
+    correct: "middle",
+    whyCorrect:
+      "TRANSPARENCY CAN BE OKAY, BUT VAGUE PENALTIES CAN BE ABUSED. DEMOCRACY NEEDS CLEAR, FAIR RULES.",
   },
   {
     id: 4,
     statement:
-      "A MAYOR INVITES CITIZENS TO PARTICIPATE IN A PUBLIC MEETING TO DISCUSS THE CITY BUDGET.",
-    correct: "YES",
-    why:
-      "PARTICIPATION IS A KEY PART OF DEMOCRACY. INVITING CITIZENS TO DISCUSS THE BUDGET SUPPORTS TRANSPARENCY AND ENGAGEMENT.",
+      "AN ELECTION COMMISSION CHANGES POLLING STATION LOCATIONS WITH 24H NOTICE, DISPROPORTIONATELY AFFECTING ONE REGION.",
+    correct: "wrong",
+    whyCorrect:
+      "LAST-MINUTE CHANGES CAN UNDERMINE FAIR ACCESS TO VOTING. ELECTIONS MUST BE PREDICTABLE AND EQUAL.",
   },
 ];
 
@@ -76,11 +66,13 @@ export default function World1Task1Screen() {
 
   const bgStyle = useMemo(() => ({ backgroundImage: `url(${BG})` }), []);
 
+  // Top message
   const TOP_MESSAGES = useMemo(
     () => [`${nameUpper} KEEP GOING`, `${nameUpper} STAY SHARP`, `${nameUpper} THINK CRITICALLY`],
     [nameUpper]
   );
   const [topMessage, setTopMessage] = useState(TOP_MESSAGES[0]);
+
   const pickTopMessage = () => {
     setTopMessage((prev) => {
       const pool = TOP_MESSAGES.filter((m) => m !== prev);
@@ -88,6 +80,7 @@ export default function World1Task1Screen() {
     });
   };
 
+  // Progress
   const [caseIndex, setCaseIndex] = useState(0);
   const current = CASES[caseIndex];
 
@@ -95,8 +88,9 @@ export default function World1Task1Screen() {
   const [curiosityPoints, setCuriosityPoints] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
 
+  // overlays
   const [correctFlash, setCorrectFlash] = useState(false);
-  const [flyText, setFlyText] = useState(null);
+  const [fly, setFly] = useState(null); // { text, toX, toY }
   const flyTimer = useRef(null);
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -115,10 +109,10 @@ export default function World1Task1Screen() {
     window.setTimeout(() => setCorrectFlash(false), 520);
   };
 
-  const showFly = (txt) => {
-    setFlyText(txt);
+  const showFly = (text, toX, toY) => {
+    setFly({ text, toX, toY });
     if (flyTimer.current) window.clearTimeout(flyTimer.current);
-    flyTimer.current = window.setTimeout(() => setFlyText(null), 900);
+    flyTimer.current = window.setTimeout(() => setFly(null), 900);
   };
 
   const openModal = (text) => {
@@ -126,12 +120,6 @@ export default function World1Task1Screen() {
     setModalOpen(true);
   };
   const closeModal = () => setModalOpen(false);
-
-  const buildEarnedBadges = useCallback((correct, curiosity) => {
-    const earned = [resolveSkillBadge(correct)];
-    if (curiosity >= 5) earned.push({ id: "curiosity", src: BADGE_CURIOSITY });
-    return earned;
-  }, []);
 
   const safeRead = (key) => {
     try {
@@ -147,71 +135,95 @@ export default function World1Task1Screen() {
     } catch {}
   };
 
-  const saveResultsForAchievements = ({ taskPoints, taskCuriosity, badges }) => {
-    safeWrite("yd_world1_task1", {
-      points: taskPoints,
-      curiosityPoints: taskCuriosity,
-      badges: badges.map((b) => ({ id: b.id, src: b.src })),
-      correctCount,
-      totalCases: CASES.length,
-      finishedAt: Date.now(),
-    });
+  const resolveSkillBadge = (correct) => {
+    if (correct <= 1) return { id: "beginner", src: BADGE_BEGINNER };
+    if (correct <= 3) return { id: "advanced", src: BADGE_ADVANCED };
+    return { id: "expert", src: BADGE_EXPERT };
+  };
 
-    const prev = safeRead("yd_scores") || { totalPoints: 0, totalCuriosityPoints: 0, badges: [] };
-    const markerKey = "yd_world1_task1_counted";
-    const alreadyCounted = safeRead(markerKey);
+  const buildEarnedBadges = useCallback((correct, curiosity) => {
+    const earned = [resolveSkillBadge(correct)];
+    if (curiosity >= 5) earned.push({ id: "curiosity", src: BADGE_CURIOSITY });
+    return earned;
+  }, []);
 
-    if (!alreadyCounted) {
-      const mergedBadges = [
-        ...(Array.isArray(prev.badges) ? prev.badges : []),
-        ...badges.map((b) => ({ id: b.id, src: b.src })),
-      ];
-
-      safeWrite("yd_scores", {
-        totalPoints: (prev.totalPoints || 0) + taskPoints,
-        totalCuriosityPoints: (prev.totalCuriosityPoints || 0) + taskCuriosity,
-        badges: mergedBadges,
+  const saveResultsForAchievements = useCallback(
+    ({ taskPoints, taskCuriosity, badges }) => {
+      safeWrite("yd_world1_task1", {
+        points: taskPoints,
+        curiosityPoints: taskCuriosity,
+        badges: badges.map((b) => ({ id: b.id, src: b.src })),
+        correctCount,
+        totalCases: CASES.length,
+        finishedAt: Date.now(),
       });
 
-      safeWrite(markerKey, true);
-    }
-  };
+      const prev = safeRead("yd_scores") || { totalPoints: 0, totalCuriosityPoints: 0, badges: [] };
+      const markerKey = "yd_world1_task1_counted";
+      const alreadyCounted = safeRead(markerKey);
 
-  const finishTask = () => {
+      if (!alreadyCounted) {
+        const mergedBadges = [
+          ...(Array.isArray(prev.badges) ? prev.badges : []),
+          ...badges.map((b) => ({ id: b.id, src: b.src })),
+        ];
+
+        safeWrite("yd_scores", {
+          totalPoints: (prev.totalPoints || 0) + taskPoints,
+          totalCuriosityPoints: (prev.totalCuriosityPoints || 0) + taskCuriosity,
+          badges: mergedBadges,
+        });
+
+        safeWrite(markerKey, true);
+      }
+    },
+    [correctCount]
+  );
+
+  const finishTask = useCallback(() => {
     const earned = buildEarnedBadges(correctCount, curiosityPoints);
-    saveResultsForAchievements({ taskPoints: points, taskCuriosity: curiosityPoints, badges: earned });
+    saveResultsForAchievements({
+      taskPoints: points,
+      taskCuriosity: curiosityPoints,
+      badges: earned,
+    });
     setEndOpen(true);
-  };
+  }, [buildEarnedBadges, correctCount, curiosityPoints, points, saveResultsForAchievements]);
 
   const nextCase = () => {
     setCaseIndex((i) => {
       const next = i + 1;
       if (next >= CASES.length) {
-        window.setTimeout(() => finishTask(), 80);
+        window.setTimeout(() => finishTask(), 60);
         return i;
       }
       return next;
     });
   };
 
-  const handleChoice = (choice) => {
+  const handlePick = (pick) => {
     if (!current || modalOpen || endOpen) return;
     pickTopMessage();
 
-    if (choice === "NOT_SURE") setCuriosityPoints((c) => c + 1);
-
-    const isCorrect = choice === current.correct;
+    const isCorrect = pick === current.correct;
     if (isCorrect) {
       showCorrect();
-      showFly("+2");
       setCorrectCount((c) => c + 1);
-      window.setTimeout(() => setPoints((p) => p + 2), 520);
+
+      // points
+      setPoints((p) => p + 2);
+      showFly("+2", 0, -26);
+
+      // curiosity for middle answer (optional logic)
+      if (pick === "middle") setCuriosityPoints((c) => c + 1);
+
       window.setTimeout(() => nextCase(), 620);
     } else {
-      openModal(current.why || "NOT QUITE. THINK AGAIN.");
+      openModal(current.whyCorrect || "NOT QUITE. THINK AGAIN.");
     }
   };
 
+  // close on ESC
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "Escape" && modalOpen) closeModal();
@@ -220,14 +232,18 @@ export default function World1Task1Screen() {
     return () => window.removeEventListener("keydown", onKey);
   }, [modalOpen]);
 
-  // ✅ no useMemo -> no CI deps warnings
-  const earnedBadges = buildEarnedBadges(correctCount, curiosityPoints);
+  const earnedBadges = useMemo(() => buildEarnedBadges(correctCount, curiosityPoints), [
+    correctCount,
+    curiosityPoints,
+    buildEarnedBadges,
+  ]);
 
   const goMainMenu = () => navigate(MAIN_MENU_ROUTE, { state: player });
   const goTaskSelector = () => navigate(TASK_SELECTOR_ROUTE, { state: player });
 
   return (
     <div className={styles.screen} style={bgStyle}>
+      {/* TOP BAR */}
       <div className={styles.topBar}>
         <div className={styles.topLeft}>{topMessage}</div>
 
@@ -237,40 +253,53 @@ export default function World1Task1Screen() {
             <span className={styles.scoreValue}>{points}</span>
           </div>
           <div className={styles.scoreItem}>
-            <img src={ICON_CURIOSITY_POINTS} alt="Curiosity" className={styles.scoreIcon} />
+            <img src={ICON_CURIOSITY} alt="Curiosity" className={styles.scoreIcon} />
             <span className={styles.scoreValue}>{curiosityPoints}</span>
           </div>
         </div>
       </div>
 
+      {/* CORRECT FLASH */}
       {correctFlash && (
         <div className={styles.correctOverlay} aria-hidden="true">
           <div className={styles.correctBox}>CORRECT</div>
         </div>
       )}
 
-      {flyText && <div className={styles.pointsFly}>{flyText}</div>}
+      {/* points fly */}
+      {fly && (
+        <div
+          className={styles.pointsFly}
+          style={{
+            "--toX": `${fly.toX}px`,
+            "--toY": `${fly.toY}px`,
+          }}
+        >
+          {fly.text}
+        </div>
+      )}
 
+      {/* MAIN CARD */}
       <div className={styles.card}>
         <div className={styles.cardText}>{current?.statement || ""}</div>
 
+        {/* choices */}
         <div className={styles.choiceRow}>
-          <button type="button" className={styles.choiceBtn} onClick={() => handleChoice("YES")}>
-            <img src={BTN_YES} alt="YES" />
+          <button type="button" className={styles.choiceBtn} onClick={() => handlePick("correct")}>
+            <img src={BTN_CORRECT} alt="YES" />
           </button>
-          <button
-            type="button"
-            className={styles.choiceBtn}
-            onClick={() => handleChoice("NOT_SURE")}
-          >
-            <img src={BTN_NOT_SURE} alt="NOT SURE" />
+
+          <button type="button" className={styles.choiceBtn} onClick={() => handlePick("middle")}>
+            <img src={BTN_MIDDLE} alt="NOT SURE" />
           </button>
-          <button type="button" className={styles.choiceBtn} onClick={() => handleChoice("NO")}>
-            <img src={BTN_NO} alt="NO" />
+
+          <button type="button" className={styles.choiceBtn} onClick={() => handlePick("wrong")}>
+            <img src={BTN_WRONG} alt="NO" />
           </button>
         </div>
       </div>
 
+      {/* MODAL */}
       {modalOpen && (
         <div className={styles.modalBackdrop} onMouseDown={closeModal} role="presentation">
           <div className={styles.modal} onMouseDown={(e) => e.stopPropagation()} role="dialog" aria-modal>
@@ -285,6 +314,7 @@ export default function World1Task1Screen() {
         </div>
       )}
 
+      {/* END */}
       {endOpen && (
         <div className={styles.endBackdrop} role="presentation">
           <div className={styles.endModal} role="dialog" aria-modal>
