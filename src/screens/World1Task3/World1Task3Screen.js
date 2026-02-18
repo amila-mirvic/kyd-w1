@@ -25,6 +25,19 @@ const BADGE_ADVANCED = asset("/world1/task3/advanced.png");
 const BADGE_EXPERT = asset("/world1/task3/expert.png");
 const BADGE_CURIOSITY = asset("/world1/task3/curiosity.png");
 
+// ✅ Stable helpers (prevents react-hooks/exhaustive-deps errors)
+const resolveSkillBadge = (correct) => {
+  if (correct <= 1) return { id: "beginner", src: BADGE_BEGINNER };
+  if (correct <= 3) return { id: "advanced", src: BADGE_ADVANCED };
+  return { id: "expert", src: BADGE_EXPERT };
+};
+
+const buildEarnedBadges = (correct, curiosity) => {
+  const earned = [resolveSkillBadge(correct)];
+  if (curiosity >= 5) earned.push({ id: "curiosity", src: BADGE_CURIOSITY });
+  return earned;
+};
+
 /**
  * ✅ DATA
  * NOTE: If you already have your final text/logic in a doc, just replace these objects.
@@ -168,17 +181,6 @@ export default function World1Task3Screen() {
   };
   const closeModal = () => setModalOpen(false);
 
-  const resolveSkillBadge = (correct) => {
-    if (correct <= 1) return { id: "beginner", src: BADGE_BEGINNER };
-    if (correct <= 3) return { id: "advanced", src: BADGE_ADVANCED };
-    return { id: "expert", src: BADGE_EXPERT };
-  };
-  const buildEarnedBadges = (correct, curiosity) => {
-    const earned = [resolveSkillBadge(correct)];
-    if (curiosity >= 5) earned.push({ id: "curiosity", src: BADGE_CURIOSITY });
-    return earned;
-  };
-
   const safeRead = (key) => {
     try {
       const raw = localStorage.getItem(key);
@@ -259,6 +261,7 @@ export default function World1Task3Screen() {
       window.setTimeout(() => setPoints((p) => p + 2), 520);
       window.setTimeout(() => setPhase("B"), 560);
     } else {
+      // show explanation (Figma popup style)
       openModal(current.part1Why || "NOT QUITE. THINK AGAIN.");
     }
   };
@@ -291,8 +294,10 @@ export default function World1Task3Screen() {
     return () => window.removeEventListener("keydown", onKey);
   }, [modalOpen]);
 
-  // ✅ No useMemo -> no CI ESLint warning about buildEarnedBadges changing deps
-  const earnedBadges = buildEarnedBadges(correctCount, curiosityPoints);
+  const earnedBadges = useMemo(
+    () => buildEarnedBadges(correctCount, curiosityPoints),
+    [correctCount, curiosityPoints]
+  );
 
   const goMainMenu = () => navigate(MAIN_MENU_ROUTE, { state: player });
   const goTaskSelector = () => navigate(TASK_SELECTOR_ROUTE, { state: player });
@@ -331,10 +336,8 @@ export default function World1Task3Screen() {
           {phase === "A" && <div className={styles.cardText}>{current?.statement || ""}</div>}
 
           {phase === "B" && (
-            <div className={styles.part2Layout}>
-              <div className={styles.part2TextCol}>
-                <div className={styles.part2Statement}>{current?.statement || ""}</div>
-              </div>
+            <>
+              <div className={styles.part2Statement}>{current?.statement || ""}</div>
 
               <div className={styles.pathsGrid}>
                 {current?.paths?.map((p) => (
@@ -349,7 +352,7 @@ export default function World1Task3Screen() {
                   </button>
                 ))}
               </div>
-            </div>
+            </>
           )}
         </div>
 
